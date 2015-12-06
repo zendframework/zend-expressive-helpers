@@ -17,6 +17,7 @@ use Zend\Expressive\Helper\Exception\MissingRouterException;
 use Zend\Expressive\Helper\UrlHelper;
 use Zend\Expressive\Helper\UrlHelperFactory;
 use Zend\Expressive\Router\RouterInterface;
+use Zend\Expressive\Router\RouteResultSubjectInterface;
 
 class UrlHelperFactoryTest extends TestCase
 {
@@ -34,11 +35,11 @@ class UrlHelperFactoryTest extends TestCase
         $this->container->get($name)->willReturn($service);
     }
 
-    public function testRegistersHelperAsApplicationRouteResultObserverWhenApplicationIsPresent()
+    public function testRegistersHelperAsRouteResultObserverWhenApplicationIsPresentInContainer()
     {
         $this->injectContainerService(RouterInterface::class, $this->router->reveal());
 
-        $application = $this->prophesize(Application::class);
+        $application = $this->prophesize(RouteResultSubjectInterface::class);
         $application->attachRouteResultObserver(Argument::type(UrlHelper::class))->shouldBeCalled();
         $this->injectContainerService(Application::class, $application->reveal());
 

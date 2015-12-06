@@ -11,13 +11,12 @@ namespace ZendTest\Expressive\Helper;
 
 use ArrayObject;
 use PHPUnit_Framework_TestCase as TestCase;
-use Zend\Expressive\Application;
 use Zend\Expressive\Helper\Exception\RuntimeException;
 use Zend\Expressive\Helper\UrlHelper;
 use Zend\Expressive\Router\Exception\RuntimeException as RouterException;
 use Zend\Expressive\Router\RouterInterface;
 use Zend\Expressive\Router\RouteResult;
-use Zend\Expressive\RouteResultObserverInterface;
+use Zend\Expressive\Router\RouteResultObserverInterface;
 
 class UrlHelperTest extends TestCase
 {
