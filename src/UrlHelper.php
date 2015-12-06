@@ -10,7 +10,7 @@ namespace Zend\Expressive\Helper;
 use Zend\Expressive\Router\Exception\RuntimeException as RouterException;
 use Zend\Expressive\Router\RouterInterface;
 use Zend\Expressive\Router\RouteResult;
-use Zend\Expressive\RouteResultObserverInterface;
+use Zend\Expressive\Router\RouteResultObserverInterface;
 
 class UrlHelper implements RouteResultObserverInterface
 {
