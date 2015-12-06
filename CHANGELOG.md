@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 1.1.0 - 2015-12-06
+
+### Added
+
+- [#1](https://github.com/zendframework/zend-expressive-helpers/pull/1) adds a
+  dependency on zendframework/zend-expressive-router, which replaces the
+  dependency on zendframework/zend-expressive. This change means the component
+  can be used without Expressive, and also removes a potential circular
+  dependency issue in consumers of the package.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- [#1](https://github.com/zendframework/zend-expressive-helpers/pull/1) removes
+  the zendframework/zend-expressive, replacing it with a dependency on
+  zendframework/zend-expressive-router.
+
+### Fixed
+
+- Nothing.
+
 ## 1.0.0 - 2015-12-04
 
 Initial release.
