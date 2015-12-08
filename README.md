@@ -74,6 +74,80 @@ return ['dependencies' => [
 > The factory requires that a service named `Zend\Expressive\Router\RouterInterface` is present,
 > and will raise an exception if the service is not found.
 
+For the helper to be useful, it must be injected with a
+`Zend\Expressive\Router\RouteResult`. To automate this, we provide a middleware
+class, `UrlHelperMiddleware`, which accepts the `UrlHelper` instance and a
+`Zend\Expressive\Router\RouteResultSubjectInterface` instance (typically a
+`Zend\Expressive\Application` instance); when invoked, it attaches the
+`UrlHelper` as a route result observer. To register this middleware, you
+will need to:
+
+- Register the `UrlHelperMiddleware` as a service in your container.
+- Register the `UrlHelperMiddleware` as pre_routing pipeline middleware.
+
+The following examples demonstrate registering the services.
+
+```php
+use Zend\Expressive\Helper\UrlHelperMiddleware;
+use Zend\Expressive\Helper\UrlHelperMiddlewareFactory;
+
+// zend-servicemanager:
+$services->setFactory(UrlHelperMiddleware::class, UrlHelperMiddlewareFactory::class);
+
+// Pimple:
+$pimple[UrlHelperMiddleware::class] = $pimple->share(function ($container) {
+    $factory = new UrlHelperMiddlewareFactory();
+    return $factory($container);
+});
+
+// Aura.Di:
+$container->set(UrlHelperMiddlewareFactory::class, $container->lazyNew(UrlHelperMiddlewareFactory::class));
+$container->set(
+    UrlHelperMiddleware::class,
+    $container->lazyGetCall(UrlHelperMiddlewareFactory::class, '__invoke', $container)
+);
+```
+
+To register the `UrlHelperMiddleware` as pre-routing pipeline middleware:
+
+```php
+use Zend\Expressive\Helper\UrlHelperMiddleware;
+
+// Do this early, before piping other middleware or routes:
+$app->pipe(UrlHelperMiddleware::class);
+
+// Or use configuration:
+// [
+//     'middleware_pipeline' => [
+//         'pre_routing' => [
+//             ['middleware' => UrlHelperMiddleware::class],
+//         ],
+//     ],
+// ]
+```
+
+The following dependency configuration will work for all three when using the
+Expressive skeleton:
+
+```php
+return [
+    'dependencies' => [
+        'invokables' => [
+        ],
+        'factories' => [
+            UrlHelper::class => UrlHelperFactory::class,
+            UrlHelperMiddleware::class => UrlHelperMiddlewareFactory::class,
+        ],
+    ],
+    'middleware_pipeline' => [
+        'pre_routing' => [
+            ['middleware' => UrlHelperMiddleware::class],
+        ],
+    ],
+]
+```
+
+
 Compose the helper in your middleware (or elsewhere), and then use it to
 generate URI paths:
 
