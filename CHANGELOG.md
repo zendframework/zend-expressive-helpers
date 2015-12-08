@@ -2,11 +2,18 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 1.1.1 - TBD
+## 1.2.0 - 2015-12-08
 
 ### Added
 
-- Nothing.
+- [#2](https://github.com/zendframework/zend-expressive-helpers/pull/2) adds the
+  following classes:
+  - `UrlHelperMiddleware`, which accepts a `UrlHelper` instance and a
+    `RouteResultSubjectInterface` instance; during invocation, it attaches the
+    helper to the subject as an observer.
+  - `UrlHelperMiddlewareFactory`, which creates a `UrlHelperMiddleware` instance
+    from the registered `UrlHelper` and `RouteResultSubjectInterface` (or
+    `Application`) instances.
 
 ### Deprecated
 
@@ -14,7 +21,12 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Removed
 
-- Nothing.
+- [#2](https://github.com/zendframework/zend-expressive-helpers/pull/2) removes
+  registration of the generated `UrlHelper` with the `Application` instance
+  within the `UrlHelperFactory`. This change was made to observed race
+  conditions when the `UrlHelper` is created within the context of the
+  `ApplicationFactory` (e.g., when generating a `TemplatedErrorHandler`
+  instance).
 
 ### Fixed
 
