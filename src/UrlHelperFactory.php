@@ -31,13 +31,6 @@ class UrlHelperFactory
             ));
         }
 
-        $helper = new UrlHelper($container->get(RouterInterface::class));
-
-        if ($container->has(Application::class)) {
-            $application = $container->get(Application::class);
-            $application->attachRouteResultObserver($helper);
-        }
-
-        return $helper;
+        return new UrlHelper($container->get(RouterInterface::class));
     }
 }

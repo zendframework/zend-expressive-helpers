@@ -11,13 +11,10 @@ namespace ZendTest\Expressive\Helper;
 
 use Interop\Container\ContainerInterface;
 use PHPUnit_Framework_TestCase as TestCase;
-use Prophecy\Argument;
-use Zend\Expressive\Application;
 use Zend\Expressive\Helper\Exception\MissingRouterException;
 use Zend\Expressive\Helper\UrlHelper;
 use Zend\Expressive\Helper\UrlHelperFactory;
 use Zend\Expressive\Router\RouterInterface;
-use Zend\Expressive\Router\RouteResultSubjectInterface;
 
 class UrlHelperFactoryTest extends TestCase
 {
@@ -35,27 +32,16 @@ class UrlHelperFactoryTest extends TestCase
         $this->container->get($name)->willReturn($service);
     }
 
-    public function testRegistersHelperAsRouteResultObserverWhenApplicationIsPresentInContainer()
+    public function testFactoryReturnsHelperWithRouterInjected()
     {
         $this->injectContainerService(RouterInterface::class, $this->router->reveal());
 
-        $application = $this->prophesize(RouteResultSubjectInterface::class);
-        $application->attachRouteResultObserver(Argument::type(UrlHelper::class))->shouldBeCalled();
-        $this->injectContainerService(Application::class, $application->reveal());
-
         $helper = $this->factory->__invoke($this->container->reveal());
         $this->assertInstanceOf(UrlHelper::class, $helper);
+        $this->assertAttributeSame($this->router->reveal(), 'router', $helper);
     }
 
-    public function testReturnsUrlHelperEvenWhenApplicationIsNotPresentInContainer()
-    {
-        $this->injectContainerService(RouterInterface::class, $this->router->reveal());
-        $this->container->has(Application::class)->willReturn(false);
-        $helper = $this->factory->__invoke($this->container->reveal());
-        $this->assertInstanceOf(UrlHelper::class, $helper);
-    }
-
-    public function testRaisesExceptionWhenRouterIsNotPresentInContainer()
+    public function testFactoryRaisesExceptionWhenRouterIsNotPresentInContainer()
     {
         $this->setExpectedException(MissingRouterException::class);
         $this->factory->__invoke($this->container->reveal());
