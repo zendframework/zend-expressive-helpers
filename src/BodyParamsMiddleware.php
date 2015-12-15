@@ -1,15 +1,41 @@
 <?php
-namespace Mwop;
+/**
+ * @see       http://github.com/zendframework/zend-expressive for the canonical source repository
+ * @copyright Copyright (c) 2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   https://github.com/zendframework/zend-expressive/blob/master/LICENSE.md New BSD License
+ */
 
-class BodyParams
+namespace Zend\Expressive\Helper;
+
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+
+class BodyParamsMiddleware
 {
+    /**
+     * List of request methods that do not have any defined body semantics, and thus
+     * will not have the body parsed.
+     *
+     * @see https://tools.ietf.org/html/rfc7231
+     *
+     * @var array
+     */
     private $nonBodyRequests = [
         'GET',
         'HEAD',
         'OPTIONS',
     ];
 
-    public function __invoke($request, $response, $next)
+    /**
+     * Adds JSON decoded request body to the request, where appropriate.
+     *
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param callable $next
+     *
+     * @return ResponseInterface
+     */
+    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, callable $next)
     {
         if (in_array($request->getMethod(), $this->nonBodyRequests)) {
             return $next($request, $response);
