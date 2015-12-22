@@ -46,18 +46,19 @@ class UrlHelper implements RouteResultObserverInterface
      */
     public function __invoke($route = null, array $params = [])
     {
-        if ($route === null && $this->result === null) {
+        $result = $this->getRouteResult();
+        if ($route === null && $result === null) {
             throw new Exception\RuntimeException(
                 'Attempting to use matched result when none was injected; aborting'
             );
         }
 
         if ($route === null) {
-            return $this->generateUriFromResult($params);
+            return $this->generateUriFromResult($params, $result);
         }
 
         if ($this->result) {
-            $params = $this->mergeParams($route, $params);
+            $params = $this->mergeParams($route, $result, $params);
         }
 
         return $this->router->generateUri($route, $params);
@@ -99,20 +100,31 @@ class UrlHelper implements RouteResultObserverInterface
     }
 
     /**
+     * Internal accessor for retrieving the route result.
+     *
+     * @return null|RouteResult
+     */
+    protected function getRouteResult()
+    {
+        return $this->result;
+    }
+
+    /**
      * @param array $params
+     * @param RouteResult $result
      * @return string
      * @throws RenderingException if current result is a routing failure.
      */
-    private function generateUriFromResult(array $params)
+    private function generateUriFromResult(array $params, RouteResult $result)
     {
-        if ($this->result->isFailure()) {
+        if ($result->isFailure()) {
             throw new Exception\RuntimeException(
                 'Attempting to use matched result when routing failed; aborting'
             );
         }
 
-        $name   = $this->result->getMatchedRouteName();
-        $params = array_merge($this->result->getMatchedParams(), $params);
+        $name   = $result->getMatchedRouteName();
+        $params = array_merge($result->getMatchedParams(), $params);
         return $this->router->generateUri($name, $params);
     }
 
@@ -129,19 +141,20 @@ class UrlHelper implements RouteResultObserverInterface
      * invocation, with the latter having precedence.
      *
      * @param string $route Route name.
+     * @param RouteResult $result
      * @param array $params Parameters provided at invocation.
      * @return array
      */
-    private function mergeParams($route, array $params)
+    private function mergeParams($route, RouteResult $result, array $params)
     {
-        if ($this->result->isFailure()) {
+        if ($result->isFailure()) {
             return $params;
         }
 
-        if ($this->result->getMatchedRouteName() !== $route) {
+        if ($result->getMatchedRouteName() !== $route) {
             return $params;
         }
 
-        return array_merge($this->result->getMatchedParams(), $params);
+        return array_merge($result->getMatchedParams(), $params);
     }
 }
