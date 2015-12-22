@@ -6,7 +6,12 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Added
 
-- Nothing.
+- [#3](https://github.com/zendframework/zend-expressive-helpers/pull/3) and
+  [#5](https://github.com/zendframework/zend-expressive-helpers/pull/5) add
+  a new `Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware` for use in
+  parsing the request body. The middleware consumes strategies, which match
+  against the `Content-Type` header, and, if matched, parse the body and return
+  a new request with the parsed body parameters.
 
 ### Deprecated
 
