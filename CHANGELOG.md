@@ -2,11 +2,13 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 1.2.1 - TBD
+## 1.2.1 - 2015-12-22
 
 ### Added
 
-- Nothing.
+- [#4](https://github.com/zendframework/zend-expressive-helpers/pull/4) adds the
+  protected method `getRouteResult()`, providing extending classes access to the
+  private `$result` member.
 
 ### Deprecated
 
