@@ -331,6 +331,142 @@ Where:
 
 - `$path`, when provided, can be a string path to use to generate a URI.
 
+### BodyParams middleware
+
+One aspect of PSR-7 is that it allows you to parse the raw request body, and
+then create a new instance with the results of parsing that later processes can
+fetch via `getParsedBody()`. It does not provide any actual facilities for
+parsing, which means you must write middleware to do so.
+
+This package provides such facilities via `Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware`.
+By default, this middleware will detect the following content types:
+
+- `application/x-www-form-urlencoded` (standard web-based forms, without file
+  uploads)
+- `application/json`, `application/*+json` (JSON payloads)
+
+You can register it manually:
+
+```php
+use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
+
+$app->pipe(BodyParamsMiddleware::class);
+```
+
+or, if using Expressive, as pre_routing pipeline middleware:
+
+```php
+// config/autoload/middleware-pipeline.global.php
+use Zend\Expressive\Helper;
+
+return [
+    'dependencies' => [
+        'invokables' => [
+            Helper\BodyParams\BodyParamsMiddleware::class => Helper\BodyParams\BodyParamsMiddleware::class,
+            /* ... */
+        ],
+        'factories' => [
+            /* ... */
+        ],
+    ],
+    'middleware_pipeline' => [
+        'pre_routing' => [
+            [ 'middleware' => Helper\BodyParams\BodyParamsMiddleware::class ],
+            /* ... */
+        ],
+        'post_routing' => [
+            /* ... */
+        ],
+    ],
+];
+```
+
+#### Strategies
+
+If you want to intercept and parse other payload types, you can add *strategies*
+to the middleware. Strategies implement `Zend\Expressive\Helper\BodyParams\StrategyInterface`:
+
+```php
+namespace Zend\Expressive\Helper\BodyParams;
+
+use Psr\Http\Message\ServerRequestInterface;
+
+interface StrategyInterface
+{
+    /**
+     * Match the content type to the strategy criteria.
+     *
+     * @param string $contentType
+     * @return bool Whether or not the strategy matches.
+     */
+    public function match($contentType);
+
+    /**
+     * Parse the body content and return a new response.
+     *
+     * @param ServerRequestInterface $request
+     * @return ServerRequestInterface
+     */
+    public function parse(ServerRequestInterface $request);
+}
+```
+
+You then register them with the middleware using the `addStrategy()` method:
+
+```php
+$bodyParams->addStrategy(new MyCustomBodyParamsStrategy());
+```
+
+To automate the registration, we recommend writing a factory for the
+`BodyParamsMiddleware`, and replacing the `invokables` registration with a
+registration in the `factories` section of the `middleware-pipeline.config.php`
+file:
+
+```php
+use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
+
+class MyCustomBodyParamsStrategyFactory
+{
+    public function __invoke($container)
+    {
+        $bodyParams = new BodyParamsMiddleware();
+        $bodyParams->addStrategy(new MyCustomBodyParamsStrategy());
+        return $bodyParams;
+    }
+}
+
+// In config/autoload/middleware-pipeline.config.php:
+use Zend\Expressive\Helper;
+
+return [
+    'dependencies' => [
+        'invokables' => [
+            // Remove this line:
+            Helper\BodyParams\BodyParamsMiddleware::class => Helper\BodyParams\BodyParamsMiddleware::class,
+            /* ... */
+        ],
+        'factories' => [
+            // Add this line:
+            Helper\BodyParams\BodyParamsMiddleware::class => MyCustomBodyParamsStrategy::class,
+            /* ... */
+        ],
+    ],
+];
+```
+
+#### Removing the default strategies
+
+If you do not want to use the default strategies (form data and JSON), you can
+clear them from the middleware using `clearStrategies()`:
+
+```php
+$bodyParamsMiddleware->clearStrategies();
+```
+
+Note: if you do this, **all** strategies will be removed! As such, we recommend
+doing this only immediately before registering any custom strategies you might
+be using.
+
 ## Documentation
 
 See the [zend-expressive](https://github.com/zendframework/zend-expressive/blob/master/doc/book)

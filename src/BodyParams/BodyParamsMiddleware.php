@@ -5,13 +5,18 @@
  * @license   https://github.com/zendframework/zend-expressive/blob/master/LICENSE.md New BSD License
  */
 
-namespace Zend\Expressive\Helper;
+namespace Zend\Expressive\Helper\BodyParams;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 class BodyParamsMiddleware
 {
+    /**
+     * @var StrategyInterface[]
+     */
+    private $strategies = [];
+
     /**
      * List of request methods that do not have any defined body semantics, and thus
      * will not have the body parsed.
@@ -25,6 +30,35 @@ class BodyParamsMiddleware
         'HEAD',
         'OPTIONS',
     ];
+
+    /**
+     * Constructor
+     *
+     * Registers the form and json strategies.
+     */
+    public function __construct()
+    {
+        $this->addStrategy(new FormUrlEncodedStrategy());
+        $this->addStrategy(new JsonStrategy());
+    }
+
+    /**
+     * Add a body parsing strategy to the middleware.
+     *
+     * @param StrategyInterface $strategy
+     */
+    public function addStrategy(StrategyInterface $strategy)
+    {
+        $this->strategies[] = $strategy;
+    }
+
+    /**
+     * Clear all strategies from the middleware.
+     */
+    public function clearStrategies()
+    {
+        $this->strategies = [];
+    }
 
     /**
      * Adds JSON decoded request body to the request, where appropriate.
@@ -41,38 +75,20 @@ class BodyParamsMiddleware
             return $next($request, $response);
         }
 
-        $header     = $request->getHeaderLine('Content-Type');
-        $priorities = [
-            'form'     => 'application/x-www-form-urlencoded',
-            'json'     => '[/+]json',
-        ];
-
-        $matched = false;
-        foreach ($priorities as $type => $pattern) {
-            $pattern = sprintf('#%s#', $pattern);
-            if (! preg_match($pattern, $header)) {
+        $header = $request->getHeaderLine('Content-Type');
+        foreach ($this->strategies as $strategy) {
+            if (! $strategy->match($header)) {
                 continue;
             }
-            $matched = $type;
-            break;
+
+            // Matched! Parse and pass on to the next
+            return $next(
+                $strategy->parse($request),
+                $response
+            );
         }
 
-        switch ($matched) {
-            case 'form':
-                // $_POST is injected by default into the request body parameters.
-                break;
-            case 'json':
-                $rawBody = $request->getBody()->getContents();
-                return $next(
-                    $request
-                        ->withAttribute('rawBody', $rawBody)
-                        ->withParsedBody(json_decode($rawBody, true)),
-                    $response
-                );
-            default:
-                break;
-        }
-
+        // No match; continue
         return $next($request, $response);
     }
 }
