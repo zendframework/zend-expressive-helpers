@@ -7,6 +7,7 @@
 
 namespace Zend\Expressive\Helper;
 
+use InvalidArgumentException;
 use Zend\Expressive\Router\Exception\RuntimeException as RouterException;
 use Zend\Expressive\Router\RouterInterface;
 use Zend\Expressive\Router\RouteResult;
@@ -14,6 +15,11 @@ use Zend\Expressive\Router\RouteResultObserverInterface;
 
 class UrlHelper implements RouteResultObserverInterface
 {
+    /**
+     * @var string
+     */
+    private $basePath = '/';
+
     /**
      * @var RouteResult
      */
@@ -61,7 +67,12 @@ class UrlHelper implements RouteResultObserverInterface
             $params = $this->mergeParams($route, $result, $params);
         }
 
-        return $this->router->generateUri($route, $params);
+        $basePath = $this->getBasePath();
+        if ($basePath === '/') {
+            return $this->router->generateUri($route, $params);
+        }
+
+        return $basePath . $this->router->generateUri($route, $params);
     }
 
     /**
@@ -100,6 +111,21 @@ class UrlHelper implements RouteResultObserverInterface
     }
 
     /**
+     * Set the base path to prepend to a generated URI
+     */
+    public function setBasePath($path)
+    {
+        if (! is_string($path)) {
+            throw new InvalidArgumentException(sprintf(
+                'Base path must be a string; received %s',
+                (is_object($path) ? get_class($path) : gettype($path))
+            ));
+        }
+
+        $this->basePath = '/' . ltrim($path, '/');
+    }
+
+    /**
      * Internal accessor for retrieving the route result.
      *
      * @return null|RouteResult
@@ -107,6 +133,16 @@ class UrlHelper implements RouteResultObserverInterface
     protected function getRouteResult()
     {
         return $this->result;
+    }
+
+    /**
+     * Internal accessor for retrieving the base path.
+     *
+     * @return string
+     */
+    protected function getBasePath()
+    {
+        return $this->basePath;
     }
 
     /**
