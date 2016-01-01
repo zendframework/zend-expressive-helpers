@@ -150,4 +150,26 @@ class UrlHelperTest extends TestCase
         $helper->update($result->reveal());
         $this->assertAttributeSame($result->reveal(), 'result', $helper);
     }
+
+    public function testAllowsSettingBasePath()
+    {
+        $helper = $this->createHelper();
+        $helper->setBasePath('/foo');
+        $this->assertAttributeEquals('/foo', 'basePath', $helper);
+    }
+
+    public function testSlashIsPrependedWhenBasePathDoesNotHaveOne()
+    {
+        $helper = $this->createHelper();
+        $helper->setBasePath('foo');
+        $this->assertAttributeEquals('/foo', 'basePath', $helper);
+    }
+
+    public function testBasePathIsPrependedToGeneratedPath()
+    {
+        $this->router->generateUri('foo', ['bar' => 'baz'])->willReturn('/foo/baz');
+        $helper = $this->createHelper();
+        $helper->setBasePath('/prefix');
+        $this->assertEquals('/prefix/foo/baz', $helper('foo', ['bar' => 'baz']));
+    }
 }
