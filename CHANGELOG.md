@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 1.4.0 - TBD
+## 1.4.0 - 2016-01-01
 
 ### Added
 
@@ -13,24 +13,6 @@ All notable changes to this project will be documented in this file, in reverse 
   environment where the application is in a subdirectory, or where you wish to
   use a version or locale prefix to all paths. You may clear the base path by
   passing an empty string to the `setBasePath()` method.
-
-### Deprecated
-
-- Nothing.
-
-### Removed
-
-- Nothing.
-
-### Fixed
-
-- Nothing.
-
-## 1.3.1 - TBD
-
-### Added
-
-- Nothing.
 
 ### Deprecated
 
