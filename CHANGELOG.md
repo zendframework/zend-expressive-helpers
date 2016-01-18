@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 1.5.0 - TBD
+## 2.0.0 - TBD
 
 ### Added
 
@@ -14,7 +14,11 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Removed
 
-- Nothing.
+- [#7](https://github.com/zendframework/zend-expressive-helpers/pull/7) removes
+  the `RouteResultObserverInterface` implementation from `UrlHelper`. This also
+  means that the `UrlHelperMiddleware` no longer registers the `UrlHelper` as a
+  route result observer, but instead just injects it with the `RouteResult`
+  present as a request attribute, if any.
 
 ### Fixed
 

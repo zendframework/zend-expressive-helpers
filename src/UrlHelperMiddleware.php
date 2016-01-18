@@ -9,11 +9,10 @@ namespace Zend\Expressive\Helper;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Zend\Expressive\Router\RouteResultSubjectInterface;
+use Zend\Expressive\Router\RouteResult;
 
 /**
- * Pipeline middleware for attaching a UrlHelper to a
- * RouteResultSubjectInterface instance.
+ * Pipeline middleware for injecting a UrlHelper with a RouteResult.
  */
 class UrlHelperMiddleware
 {
@@ -23,24 +22,17 @@ class UrlHelperMiddleware
     private $helper;
 
     /**
-     * @var RouteResultSubjectInterface
-     */
-    private $subject;
-
-    /**
      * @param UrlHelper $helper
-     * @param RouteResultSubjectInterface $subject
      */
-    public function __construct(UrlHelper $helper, RouteResultSubjectInterface $subject)
+    public function __construct(UrlHelper $helper)
     {
         $this->helper = $helper;
-        $this->subject = $subject;
     }
 
     /**
-     * Attach the UrlHelper instance as an observer to the RouteResultSubjectInterface
+     * Inject the UrlHelper instance with a RouteResult, if present as a request attribute.
      *
-     * Attaches the helper, and then dispatches the next middleware.
+     * Injects the helper, and then dispatches the next middleware.
      *
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
@@ -49,7 +41,12 @@ class UrlHelperMiddleware
      */
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, callable $next)
     {
-        $this->subject->attachRouteResultObserver($this->helper);
+        $result = $request->getAttribute(RouteResult::class, false);
+
+        if ($result instanceof RouteResult) {
+            $this->helper->setRouteResult($result);
+        }
+
         return $next($request, $response);
     }
 }

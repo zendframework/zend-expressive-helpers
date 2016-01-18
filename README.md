@@ -28,9 +28,11 @@ can recommend the following implementations:
 
 `Zend\Expressive\Helper\UrlHelper` provides the ability to generate a URI path
 based on a given route defined in the `Zend\Expressive\Router\RouterInterface`.
-If registered as a route result observer, and the route being used was also
-the one matched during routing, you can provide a subset of routing
-parameters, and any not provided will be pulled from those matched.
+The provided `Zend\Expressive\Helper\UrlHelperMiddleware` can look for a
+`Zend\Expressive\Router\RouteResult` request attribute, and, if present, inject
+the `UrlHelper` with it; when this occurs, if the route being used to generate
+a URI was also the one matched during routing, you can provide a subset of
+routing parameters, and any not provided will be pulled from those matched.
 
 In order to use the helper, you will need to instantiate it with the current
 `RouterInterface`. The factory `Zend\Expressive\Helper\UrlHelperFactory` has
@@ -76,14 +78,13 @@ return ['dependencies' => [
 
 For the helper to be useful, it must be injected with a
 `Zend\Expressive\Router\RouteResult`. To automate this, we provide a middleware
-class, `UrlHelperMiddleware`, which accepts the `UrlHelper` instance and a
-`Zend\Expressive\Router\RouteResultSubjectInterface` instance (typically a
-`Zend\Expressive\Application` instance); when invoked, it attaches the
-`UrlHelper` as a route result observer. To register this middleware, you
-will need to:
+class, `UrlHelperMiddleware`, which accepts the `UrlHelper` instance.
+When invoked, it looks for a `RouteResult` request attribute, and, if found,
+injects it into the `UrlHelper`. To register this middleware, you will need to:
 
 - Register the `UrlHelperMiddleware` as a service in your container.
-- Register the `UrlHelperMiddleware` as pre_routing pipeline middleware.
+- Register the `UrlHelperMiddleware` as middleware between the Expressive
+  routing and dispatch middleware.
 
 The following examples demonstrate registering the services.
 
@@ -108,19 +109,25 @@ $container->set(
 );
 ```
 
-To register the `UrlHelperMiddleware` as pre-routing pipeline middleware:
+To register the `UrlHelperMiddleware`:
 
 ```php
 use Zend\Expressive\Helper\UrlHelperMiddleware;
 
-// Do this early, before piping other middleware or routes:
+$app->pipeRoutingMiddleware();
 $app->pipe(UrlHelperMiddleware::class);
+$app->pipeDispatchMiddleware();
 
 // Or use configuration:
 // [
 //     'middleware_pipeline' => [
-//         'pre_routing' => [
-//             ['middleware' => UrlHelperMiddleware::class],
+//         'routing' => [
+//             'middleware' => [
+//                 Zend\Expressive\Container\ApplicationFactory::ROUTING_MIDDLEWARE,
+//                 UrlHelperMiddleware::class,
+//                 Zend\Expressive\Container\ApplicationFactory::DISPATCH_MIDDLEWARE,
+//             ],
+//             'priority' => 1,
 //         ],
 //     ],
 // ]
@@ -140,8 +147,13 @@ return [
         ],
     ],
     'middleware_pipeline' => [
-        'pre_routing' => [
-            ['middleware' => UrlHelperMiddleware::class],
+        'routing' => [
+            'middleware' => [
+                Zend\Expressive\Container\ApplicationFactory::ROUTING_MIDDLEWARE,
+                UrlHelperMiddleware::class,
+                Zend\Expressive\Container\ApplicationFactory::DISPATCH_MIDDLEWARE,
+            ],
+            'priority' => 1,
         ],
     ],
 ]
@@ -278,7 +290,7 @@ As such, you will need to:
 
 - Register the `ServerUrlHelper` as a service in your container.
 - Register the `ServerUrlMiddleware` as a service in your container.
-- Register the `ServerUrlMiddleware` as pre_routing pipeline middleware.
+- Register the `ServerUrlMiddleware` early in your middleware pipeline.
 
 The following examples demonstrate registering the services.
 
@@ -309,7 +321,7 @@ $container->set(
 );
 ```
 
-To register the `ServerUrlMiddleware` as pre-routing pipeline middleware:
+To register the `ServerUrlMiddleware` in your middleware pipeline:
 
 ```php
 use Zend\Expressive\Helper\ServerUrlMiddleware;
@@ -317,11 +329,16 @@ use Zend\Expressive\Helper\ServerUrlMiddleware;
 // Do this early, before piping other middleware or routes:
 $app->pipe(ServerUrlMiddleware::class);
 
+/* ... */
+$app->pipeRoutingMiddleware();
+$app->pipeDispatchMiddleware();
+
 // Or use configuration:
 // [
 //     'middleware_pipeline' => [
-//         'pre_routing' => [
-//             ['middleware' => ServerUrlMiddleware::class],
+//         [
+//             'middleware' => ServerUrlMiddleware::class,
+//             'priority' => PHP_INT_MAX,
 //         ],
 //     ],
 // ]
@@ -341,8 +358,9 @@ return [
         ],
     ],
     'middleware_pipeline' => [
-        'pre_routing' => [
-            ['middleware' => ServerUrlMiddleware::class],
+        [
+            'middleware' => ServerUrlMiddleware::class,
+            'priority' => PHP_INT_MAX,
         ],
     ],
 ]
@@ -407,7 +425,7 @@ use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
 $app->pipe(BodyParamsMiddleware::class);
 ```
 
-or, if using Expressive, as pre_routing pipeline middleware:
+or, if using Expressive, as pipeline middleware:
 
 ```php
 // config/autoload/middleware-pipeline.global.php
@@ -424,11 +442,11 @@ return [
         ],
     ],
     'middleware_pipeline' => [
-        'pre_routing' => [
-            [ 'middleware' => Helper\BodyParams\BodyParamsMiddleware::class ],
-            /* ... */
+        [
+            'middleware' => Helper\BodyParams\BodyParamsMiddleware::class,
+            'priority' => 1000,
         ],
-        'post_routing' => [
+        'routing' => [
             /* ... */
         ],
     ],
