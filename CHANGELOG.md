@@ -2,7 +2,25 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 2.0.0 - TBD
+## 2.1.0 - TBD
+
+### Added
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
+## 2.0.0 - 2017-01-18
 
 ### Added
 
@@ -19,24 +37,6 @@ All notable changes to this project will be documented in this file, in reverse 
   means that the `UrlHelperMiddleware` no longer registers the `UrlHelper` as a
   route result observer, but instead just injects it with the `RouteResult`
   present as a request attribute, if any.
-
-### Fixed
-
-- Nothing.
-
-## 1.4.1 - TBD
-
-### Added
-
-- Nothing.
-
-### Deprecated
-
-- Nothing.
-
-### Removed
-
-- Nothing.
 
 ### Fixed
 
