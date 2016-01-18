@@ -11,9 +11,8 @@ use InvalidArgumentException;
 use Zend\Expressive\Router\Exception\RuntimeException as RouterException;
 use Zend\Expressive\Router\RouterInterface;
 use Zend\Expressive\Router\RouteResult;
-use Zend\Expressive\Router\RouteResultObserverInterface;
 
-class UrlHelper implements RouteResultObserverInterface
+class UrlHelper
 {
     /**
      * @var string
@@ -95,14 +94,11 @@ class UrlHelper implements RouteResultObserverInterface
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public function update(RouteResult $result)
-    {
-        $this->result = $result;
-    }
-
-    /**
+     * Inject a route result.
+     *
+     * When the route result is injected, the helper will use it to seed default
+     * parameters if the URL being generated is for the route that was matched.
+     *
      * @param RouteResult $result
      */
     public function setRouteResult(RouteResult $result)

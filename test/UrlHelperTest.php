@@ -16,7 +16,6 @@ use Zend\Expressive\Helper\UrlHelper;
 use Zend\Expressive\Router\Exception\RuntimeException as RouterException;
 use Zend\Expressive\Router\RouterInterface;
 use Zend\Expressive\Router\RouteResult;
-use Zend\Expressive\Router\RouteResultObserverInterface;
 
 class UrlHelperTest extends TestCase
 {
@@ -137,17 +136,11 @@ class UrlHelperTest extends TestCase
         $this->assertEquals('URL', $helper('resource', ['id' => 2]));
     }
 
-    public function testIsARouteResultObserver()
-    {
-        $helper = $this->createHelper();
-        $this->assertInstanceOf(RouteResultObserverInterface::class, $helper);
-    }
-
-    public function testUpdateMethodSetsRouteResultProperty()
+    public function testCanInjectRouteResult()
     {
         $result = $this->prophesize(RouteResult::class);
         $helper = $this->createHelper();
-        $helper->update($result->reveal());
+        $helper->setRouteResult($result->reveal());
         $this->assertAttributeSame($result->reveal(), 'result', $helper);
     }
 

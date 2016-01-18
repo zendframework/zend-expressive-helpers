@@ -8,8 +8,6 @@
 namespace Zend\Expressive\Helper;
 
 use Interop\Container\ContainerInterface;
-use Zend\Expressive\Application;
-use Zend\Expressive\Router\RouteResultSubjectInterface;
 
 class UrlHelperMiddlewareFactory
 {
@@ -20,8 +18,6 @@ class UrlHelperMiddlewareFactory
      * @return UrlHelperMiddleware
      * @throws Exception\MissingHelperException if the UrlHelper service is
      *     missing
-     * @throws Exception\MissingSubjectException if the
-     *     RouteResultSubjectInterface service is missing
      */
     public function __invoke(ContainerInterface $container)
     {
@@ -33,44 +29,6 @@ class UrlHelperMiddlewareFactory
             ));
         }
 
-        $subjectService = $this->getSubjectService($container);
-
-        return new UrlHelperMiddleware(
-            $container->get(UrlHelper::class),
-            $container->get($subjectService)
-        );
-    }
-
-    /**
-     * Determine the name of the service returning the RouteResultSubjectInterface instance.
-     *
-     * Checks against:
-     *
-     * - RouteResultSubjectInterface
-     * - Application
-     *
-     * returning the first that is found in the container.
-     *
-     * If neither is found, raises an exception.
-     *
-     * @param ContainerInterface $container
-     * @return string
-     * @throws Exception\MissingSubjectException
-     */
-    private function getSubjectService(ContainerInterface $container)
-    {
-        if ($container->has(RouteResultSubjectInterface::class)) {
-            return RouteResultSubjectInterface::class;
-        }
-
-        if ($container->has(Application::class)) {
-            return Application::class;
-        }
-
-        throw new Exception\MissingSubjectException(sprintf(
-            '%s requires a %s service at instantiation; none found',
-            UrlHelperMiddleware::class,
-            UrlHelper::class
-        ));
+        return new UrlHelperMiddleware($container->get(UrlHelper::class));
     }
 }
