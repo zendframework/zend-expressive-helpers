@@ -42,6 +42,7 @@ class UrlHelper
      *
      * @param string $route
      * @param array $params
+     * @param array $options
      * @return string
      * @throws Exception\RuntimeException if no route provided, and no result match
      *     present.
@@ -49,7 +50,7 @@ class UrlHelper
      *     routing failure.
      * @throws RouterException if router cannot generate URI for given route.
      */
-    public function __invoke($route = null, array $params = [])
+    public function __invoke($route = null, array $params = [], array $options = [])
     {
         $result = $this->getRouteResult();
         if ($route === null && $result === null) {
@@ -59,7 +60,7 @@ class UrlHelper
         }
 
         if ($route === null) {
-            return $this->generateUriFromResult($params, $result);
+            return $this->generateUriFromResult($params, $result, $options);
         }
 
         if ($this->result) {
@@ -68,10 +69,10 @@ class UrlHelper
 
         $basePath = $this->getBasePath();
         if ($basePath === '/') {
-            return $this->router->generateUri($route, $params);
+            return $this->router->generateUri($route, $params, $options);
         }
 
-        return $basePath . $this->router->generateUri($route, $params);
+        return $basePath . $this->router->generateUri($route, $params, $options);
     }
 
     /**
@@ -81,6 +82,7 @@ class UrlHelper
      *
      * @param string $route
      * @param array $params
+     * @param array $options
      * @return string
      * @throws Exception\RuntimeException if no route provided, and no result match
      *     present.
@@ -88,9 +90,9 @@ class UrlHelper
      *     routing failure.
      * @throws RouterException if router cannot generate URI for given route.
      */
-    public function generate($route = null, array $params = [])
+    public function generate($route = null, array $params = [], array $options = [])
     {
-        return $this($route, $params);
+        return $this($route, $params, $options);
     }
 
     /**
@@ -144,10 +146,11 @@ class UrlHelper
     /**
      * @param array $params
      * @param RouteResult $result
+     * @param array $options
      * @return string
      * @throws RenderingException if current result is a routing failure.
      */
-    private function generateUriFromResult(array $params, RouteResult $result)
+    private function generateUriFromResult(array $params, RouteResult $result, array $options)
     {
         if ($result->isFailure()) {
             throw new Exception\RuntimeException(
@@ -157,7 +160,7 @@ class UrlHelper
 
         $name   = $result->getMatchedRouteName();
         $params = array_merge($result->getMatchedParams(), $params);
-        return $this->router->generateUri($name, $params);
+        return $this->router->generateUri($name, $params, $options);
     }
 
     /**

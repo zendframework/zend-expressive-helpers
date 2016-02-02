@@ -48,7 +48,7 @@ class UrlHelperTest extends TestCase
 
     public function testRaisesExceptionOnInvocationIfRouterCannotGenerateUriForRouteProvided()
     {
-        $this->router->generateUri('foo', [])->willThrow(RouterException::class);
+        $this->router->generateUri('foo', [], [])->willThrow(RouterException::class);
         $helper = $this->createHelper();
         $this->setExpectedException(RouterException::class);
         $helper('foo');
@@ -61,7 +61,7 @@ class UrlHelperTest extends TestCase
         $result->getMatchedRouteName()->willReturn('foo');
         $result->getMatchedParams()->willReturn(['bar' => 'baz']);
 
-        $this->router->generateUri('foo', ['bar' => 'baz'])->willReturn('URL');
+        $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('URL');
 
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
@@ -76,7 +76,7 @@ class UrlHelperTest extends TestCase
         $result->getMatchedRouteName()->willReturn('foo');
         $result->getMatchedParams()->willReturn(['bar' => 'baz']);
 
-        $this->router->generateUri('foo', ['bar' => 'baz', 'baz' => 'bat'])->willReturn('URL');
+        $this->router->generateUri('foo', ['bar' => 'baz', 'baz' => 'bat'], [])->willReturn('URL');
 
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
@@ -86,7 +86,7 @@ class UrlHelperTest extends TestCase
 
     public function testWhenRouteProvidedTheHelperDelegatesToTheRouterToGenerateUrl()
     {
-        $this->router->generateUri('foo', ['bar' => 'baz'])->willReturn('URL');
+        $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('URL');
         $helper = $this->createHelper();
         $this->assertEquals('URL', $helper('foo', ['bar' => 'baz']));
     }
@@ -98,7 +98,7 @@ class UrlHelperTest extends TestCase
         $result->getMatchedRouteName()->willReturn('not-resource');
         $result->getMatchedParams()->shouldNotBeCalled();
 
-        $this->router->generateUri('resource', [])->willReturn('URL');
+        $this->router->generateUri('resource', [], [])->willReturn('URL');
 
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
@@ -113,7 +113,7 @@ class UrlHelperTest extends TestCase
         $result->getMatchedRouteName()->willReturn('resource');
         $result->getMatchedParams()->willReturn(['id' => 1]);
 
-        $this->router->generateUri('resource', ['id' => 1, 'version' => 2])->willReturn('URL');
+        $this->router->generateUri('resource', ['id' => 1, 'version' => 2], [])->willReturn('URL');
 
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
@@ -128,7 +128,7 @@ class UrlHelperTest extends TestCase
         $result->getMatchedRouteName()->willReturn('resource');
         $result->getMatchedParams()->willReturn(['id' => 1]);
 
-        $this->router->generateUri('resource', ['id' => 2])->willReturn('URL');
+        $this->router->generateUri('resource', ['id' => 2], [])->willReturn('URL');
 
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
@@ -160,9 +160,16 @@ class UrlHelperTest extends TestCase
 
     public function testBasePathIsPrependedToGeneratedPath()
     {
-        $this->router->generateUri('foo', ['bar' => 'baz'])->willReturn('/foo/baz');
+        $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('/foo/baz');
         $helper = $this->createHelper();
         $helper->setBasePath('/prefix');
         $this->assertEquals('/prefix/foo/baz', $helper('foo', ['bar' => 'baz']));
+    }
+
+    public function testOptionsArePassedToRouter()
+    {
+        $this->router->generateUri('foo', [], ['bar' => 'baz'])->willReturn('URL');
+        $helper = $this->createHelper();
+        $this->assertEquals('URL', $helper('foo', [], ['bar' => 'baz']));
     }
 }
