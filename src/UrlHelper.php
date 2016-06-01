@@ -59,19 +59,17 @@ class UrlHelper
         }
 
         if ($route === null) {
-            return $this->generateUriFromResult($params, $result);
-        }
-
-        if ($this->result) {
-            $params = $this->mergeParams($route, $result, $params);
+            $url = $this->generateUriFromResult($params, $result);
+        } else {
+            if ($result) {
+                $params = $this->mergeParams($route, $result, $params);
+            }
+            $url = $this->router->generateUri($route, $params);
         }
 
         $basePath = $this->getBasePath();
-        if ($basePath === '/') {
-            return $this->router->generateUri($route, $params);
-        }
 
-        return $basePath . $this->router->generateUri($route, $params);
+        return ($basePath === '/') ? $url : $basePath . $url;
     }
 
     /**
