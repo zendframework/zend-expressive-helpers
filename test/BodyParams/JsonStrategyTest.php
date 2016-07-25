@@ -61,7 +61,7 @@ class JsonStrategyTest extends TestCase
     {
         $body = '{"foo":"bar"}';
         $stream = $this->prophesize(StreamInterface::class);
-        $stream->getContents()->willReturn($body);
+        $stream->__toString()->willReturn($body);
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getBody()->willReturn($stream->reveal());
         $request->withAttribute('rawBody', $body)->will(function () use ($request) {
