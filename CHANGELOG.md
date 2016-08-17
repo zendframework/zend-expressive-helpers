@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 2.0.1 - TBD
+## 2.0.1 - 2016-08-17
 
 ### Added
 
@@ -18,7 +18,9 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
-- Nothing.
+- [#18](https://github.com/zendframework/zend-expressive-helpers/pull/18) parsing
+  request body with the `JsonStrategy` will implicitly rewind the stream in order
+  to parse the entire body, rather than just parsing the remaining contents.
 
 ## 2.0.0 - 2017-01-18
 
