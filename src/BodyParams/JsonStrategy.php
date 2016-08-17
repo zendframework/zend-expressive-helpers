@@ -26,7 +26,7 @@ class JsonStrategy implements StrategyInterface
      */
     public function parse(ServerRequestInterface $request)
     {
-        $rawBody = $request->getBody()->getContents();
+        $rawBody = (string) $request->getBody();
         return $request
             ->withAttribute('rawBody', $rawBody)
             ->withParsedBody(json_decode($rawBody, true));
