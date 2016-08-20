@@ -23,7 +23,7 @@ interface StrategyInterface
     public function match($contentType);
 
     /**
-     * Parse the body content and return a new response.
+     * Parse the body content and return a new request.
      *
      * @param ServerRequestInterface $request
      * @return ServerRequestInterface
