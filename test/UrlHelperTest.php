@@ -165,4 +165,24 @@ class UrlHelperTest extends TestCase
         $helper->setBasePath('/prefix');
         $this->assertEquals('/prefix/foo/baz', $helper('foo', ['bar' => 'baz']));
     }
+
+    public function testBasePathIsPrependedToGeneratedPathWhenUsingRouteResult()
+    {
+        $result = $this->prophesize(RouteResult::class);
+        $result->isFailure()->willReturn(false);
+        $result->getMatchedRouteName()->willReturn('foo');
+        $result->getMatchedParams()->willReturn(['bar' => 'baz']);
+
+        $this->router->generateUri('foo', ['bar' => 'baz'])->willReturn('/foo/baz');
+
+        $helper = $this->createHelper();
+        $helper->setBasePath('/prefix');
+        $helper->setRouteResult($result->reveal());
+
+        // test with explicit params
+        $this->assertEquals('/prefix/foo/baz', $helper(null, ['bar' => 'baz']));
+
+        // test with implicit route result params
+        $this->assertEquals('/prefix/foo/baz', $helper());
+    }
 }
