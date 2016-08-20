@@ -40,7 +40,7 @@ class UrlHelper
     /**
      * Generate a URL based on a given route.
      *
-     * @param string $route
+     * @param string $routeName
      * @param array $params
      * @return string
      * @throws Exception\RuntimeException if no route provided, and no result match
@@ -49,29 +49,29 @@ class UrlHelper
      *     routing failure.
      * @throws RouterException if router cannot generate URI for given route.
      */
-    public function __invoke($route = null, array $params = [])
+    public function __invoke($routeName = null, array $params = [])
     {
         $result = $this->getRouteResult();
-        if ($route === null && $result === null) {
+        if ($routeName === null && $result === null) {
             throw new Exception\RuntimeException(
                 'Attempting to use matched result when none was injected; aborting'
             );
         }
 
-        if ($route === null) {
-            return $this->generateUriFromResult($params, $result);
-        }
-
-        if ($this->result) {
-            $params = $this->mergeParams($route, $result, $params);
-        }
-
         $basePath = $this->getBasePath();
         if ($basePath === '/') {
-            return $this->router->generateUri($route, $params);
+            $basePath = '';
         }
 
-        return $basePath . $this->router->generateUri($route, $params);
+        if ($routeName === null) {
+            return $basePath . $this->generateUriFromResult($params, $result);
+        }
+
+        if ($result) {
+            $params = $this->mergeParams($routeName, $result, $params);
+        }
+
+        return $basePath . $this->router->generateUri($routeName, $params);
     }
 
     /**
