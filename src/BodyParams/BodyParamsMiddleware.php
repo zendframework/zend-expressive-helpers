@@ -9,6 +9,7 @@ namespace Zend\Expressive\Helper\BodyParams;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Zend\Expressive\Helper\Exception\MalformedRequestBodyException;
 
 class BodyParamsMiddleware
 {
@@ -82,10 +83,17 @@ class BodyParamsMiddleware
             }
 
             // Matched! Parse and pass on to the next
-            return $next(
-                $strategy->parse($request),
-                $response
-            );
+            try {
+                return $next(
+                    $strategy->parse($request),
+                    $response
+                );
+            } catch (MalformedRequestBodyException $exception) {
+                return $next(
+                    $request,
+                    $response->withStatus($exception->getCode(), $exception->getMessage())
+                );
+            }
         }
 
         // No match; continue

@@ -136,7 +136,7 @@ class UrlHelper
      *
      * @return string
      */
-    protected function getBasePath()
+    public function getBasePath()
     {
         return $this->basePath;
     }
