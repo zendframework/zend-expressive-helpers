@@ -58,18 +58,20 @@ class UrlHelper
             );
         }
 
-        if ($route === null) {
-            $url = $this->generateUriFromResult($params, $result);
-        } else {
-            if ($result) {
-                $params = $this->mergeParams($route, $result, $params);
-            }
-            $url = $this->router->generateUri($route, $params);
+        $basePath = $this->getBasePath();
+        if ($basePath === '/') {
+            $basePath = '';
         }
 
-        $basePath = $this->getBasePath();
+        if ($route === null) {
+            return $basePath . $this->generateUriFromResult($params, $result);
+        }
 
-        return ($basePath === '/') ? $url : $basePath . $url;
+        if ($result) {
+            $params = $this->mergeParams($route, $result, $params);
+        }
+
+        return $basePath . $this->router->generateUri($route, $params);
     }
 
     /**
