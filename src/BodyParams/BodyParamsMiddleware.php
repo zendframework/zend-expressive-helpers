@@ -83,17 +83,10 @@ class BodyParamsMiddleware
             }
 
             // Matched! Parse and pass on to the next
-            try {
-                return $next(
-                    $strategy->parse($request),
-                    $response
-                );
-            } catch (MalformedRequestBodyException $exception) {
-                return $next(
-                    $request,
-                    $response->withStatus($exception->getCode(), $exception->getMessage())
-                );
-            }
+            return $next(
+                $strategy->parse($request),
+                $response
+            );
         }
 
         // No match; continue

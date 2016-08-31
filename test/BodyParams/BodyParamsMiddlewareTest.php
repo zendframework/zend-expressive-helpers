@@ -8,7 +8,6 @@
 namespace ZendTest\Expressive\Helper\BodyParams;
 
 use PHPUnit_Framework_TestCase as TestCase;
-use Prophecy\Argument;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
@@ -162,28 +161,30 @@ class BodyParamsMiddlewareTest extends TestCase
         $this->assertTrue($triggered, 'Next was not triggered');
     }
 
-    public function testRespondsWithBadRequestErrorOnMalformedRequestBody()
+    public function testThrowsMalformedRequestBodyExceptionWhenRequestBodyIsNotValidJson()
     {
+        $expectedException = new MalformedRequestBodyException('malformed request body');
+
+        $this->setExpectedException(
+            get_class($expectedException),
+            $expectedException->getMessage(),
+            $expectedException->getCode()
+        );
+
         $middleware = $this->bodyParams;
         $serverRequest = new ServerRequest([], [], '', 'PUT', $this->body, ['Content-type' => 'foo/bar']);
-        $expectedException = new MalformedRequestBodyException('malformed request body', 400);
         $strategy = $this->prophesize(StrategyInterface::class);
         $strategy->match('foo/bar')->willReturn(true);
         $strategy->parse($serverRequest)->willThrow($expectedException);
         $middleware->addStrategy($strategy->reveal());
 
-        $triggered = false;
-        $response = $middleware(
-            $serverRequest,
-            new Response(),
+        $middleware($serverRequest, new Response(),
             function ($request, $response) use (&$triggered) {
                 $triggered = true;
                 return $response;
             }
         );
 
-        $this->assertTrue($triggered, 'Next was not triggered');
-        $this->assertSame($expectedException->getCode(), $response->getStatusCode());
-        $this->assertSame($expectedException->getMessage(), $response->getReasonPhrase());
+        $this->assertFalse($triggered, 'Next should not have been triggered!');
     }
 }
