@@ -11,6 +11,7 @@ use PHPUnit_Framework_TestCase as TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Zend\Expressive\Helper\BodyParams\JsonStrategy;
+use Zend\Expressive\Helper\Exception\MalformedRequestBodyException;
 
 class JsonStrategyTest extends TestCase
 {
@@ -72,5 +73,21 @@ class JsonStrategyTest extends TestCase
         });
 
         $this->assertSame($request->reveal(), $this->strategy->parse($request->reveal()));
+    }
+
+    public function testThrowsExceptionOnMalformedJsonInRequestBody()
+    {
+        $this->setExpectedException(
+            MalformedRequestBodyException::class,
+            'Error when parsing JSON request body: Syntax error',
+            400
+        );
+        $body = '{foobar}';
+        $stream = $this->prophesize(StreamInterface::class);
+        $stream->__toString()->willReturn($body);
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getBody()->willReturn($stream->reveal());
+
+        $this->strategy->parse($request->reveal());
     }
 }
