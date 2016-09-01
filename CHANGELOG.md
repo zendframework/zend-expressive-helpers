@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 2.0.3 - TBD
+## 2.0.3 - 2016-09-01
 
 ### Added
 
@@ -18,7 +18,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
-- Nothing.
+- [#21](https://github.com/zendframework/zend-expressive-helpers/pull/21) Respond with 400 on bad JSON input
 
 ## 2.0.2 - 2016-08-20
 
