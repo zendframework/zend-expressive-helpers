@@ -155,4 +155,17 @@ class ServerUrlHelperTest extends TestCase
         $helper->setUri($uri);
         $this->assertEquals($expected, $helper($path));
     }
+
+    public function testGenerateProxiesToInvokeMethod()
+    {
+        $path = '/foo';
+
+        $helper = \Mockery::mock(ServerUrlHelper::class)->shouldDeferMissing();
+        $helper->shouldReceive('__invoke')
+            ->once()
+            ->with($path)
+            ->andReturn('it worked');
+
+        $this->assertSame('it worked', $helper->generate($path));
+    }
 }

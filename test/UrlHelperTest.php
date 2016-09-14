@@ -185,4 +185,55 @@ class UrlHelperTest extends TestCase
         // test with implicit route result params
         $this->assertEquals('/prefix/foo/baz', $helper());
     }
+
+    public function testGenerateProxiesToInvokeMethod()
+    {
+        $route = 'foo';
+        $params = ['bar'];
+
+        $helper = \Mockery::mock(UrlHelper::class)->shouldDeferMissing();
+        $helper->shouldReceive('__invoke')
+            ->once()
+            ->with($route, $params)
+            ->andReturn('it worked');
+
+        $this->assertSame('it worked', $helper->generate($route, $params));
+    }
+
+    public function invalidBasePathProvider()
+    {
+        return [
+            [new \stdClass('foo')],
+            [['bar']],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidBasePathProvider
+     */
+    public function testThrowsExceptionWhenSettingInvalidBasePaths($basePath)
+    {
+        $this->setExpectedExceptionRegExp(
+            \InvalidArgumentException::class,
+            '/^Base path must be a string; received [a-zA-Z]+/'
+        );
+
+        $helper = $this->createHelper();
+        $helper->setBasePath($basePath);
+    }
+
+    public function testIfRouteResultIsFailureItWillNotMergeParamsToGenerateUri()
+    {
+        $result = $this->prophesize(RouteResult::class);
+        $result->isFailure()->willReturn(true);
+        $result->getMatchedRouteName()->willReturn('resource');
+        $result->getMatchedParams()->shouldNotBeCalled();
+
+        $this->router->generateUri('resource', [])->willReturn('URL');
+
+        $helper = $this->createHelper();
+        $helper->setRouteResult($result->reveal());
+
+        $this->assertEquals('URL', $helper('resource'));
+    }
 }
