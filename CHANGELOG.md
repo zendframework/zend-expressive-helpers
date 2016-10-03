@@ -2,11 +2,12 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 2.0.4 - TBD
+## 2.1.0 - 2016-10-02
 
 ### Added
 
-- Nothing.
+- [#19](https://github.com/zendframework/zend-expressive-helpers/pull/19) FormUrlEncodedStrategy parses raw
+  request bodies, if needed.
 
 ### Deprecated
 
@@ -18,7 +19,8 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
-- Nothing.
+- [#22](https://github.com/zendframework/zend-expressive-helpers/pull/22) updates JsonStrategy test suite to
+  function with both the `json` and `jsonc` extensions
 
 ## 2.0.3 - 2016-09-01
 
