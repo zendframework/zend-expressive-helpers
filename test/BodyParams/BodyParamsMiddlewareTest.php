@@ -78,7 +78,7 @@ class BodyParamsMiddlewareTest extends TestCase
             ['GET', 'application/json'],
             ['HEAD', 'application/json'],
             ['OPTIONS', 'application/json'],
-            ['POST', 'application/x-www-form-urlencoded'],
+            ['GET', 'application/x-www-form-urlencoded'],
             ['DELETE', 'this-isnt-a-real-content-type'],
         ];
     }
