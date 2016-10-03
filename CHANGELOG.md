@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 2.1.0 - TBD
+
+### Added
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- [#22](https://github.com/zendframework/zend-expressive-helpers/pull/22) updates JsonStrategy test suite to
+  function with both the `json` and `jsonc` extensions
+
 ## 2.0.4 - TBD
 
 ### Added
