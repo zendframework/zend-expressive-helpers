@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Added
 
-- Nothing.
+- [#19](https://github.com/zendframework/zend-expressive-helpers/pull/19) FormUrlEncodedStrategy parses raw
+  request bodies, if needed.
 
 ### Deprecated
 
