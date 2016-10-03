@@ -9,6 +9,7 @@ namespace ZendTest\Expressive\Helper\BodyParams;
 
 use PHPUnit_Framework_TestCase as TestCase;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamInterface;
 use Zend\Expressive\Helper\BodyParams\FormUrlEncodedStrategy;
 
 class FormUrlEncodedStrategyTest extends TestCase
@@ -56,7 +57,35 @@ class FormUrlEncodedStrategyTest extends TestCase
 
     public function testParseReturnsOriginalRequest()
     {
-        $request = $this->prophesize(ServerRequestInterface::class)->reveal();
-        $this->assertSame($request, $this->strategy->parse($request));
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getParsedBody()->willReturn(['test' => 'value']);
+
+        $this->assertSame($request->reveal(), $this->strategy->parse($request->reveal()));
+    }
+
+    public function testParseReturnsOriginalRequestIfBodyIsEmpty()
+    {
+        $stream = $this->prophesize(StreamInterface::class);
+        $stream->__toString()->willReturn('');
+
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getParsedBody()->willReturn(null);
+        $request->getBody()->willReturn($stream);
+
+        $this->assertSame($request->reveal(), $this->strategy->parse($request->reveal()));
+    }
+
+    public function testParseReturnsNewRequest()
+    {
+        $body = 'foo=bar&bar=foo';
+
+        $stream = $this->prophesize(StreamInterface::class);
+        $stream->__toString()->shouldBeCalled()->willReturn($body);
+
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getParsedBody()->willReturn(null);
+        $request->getBody()->willReturn($stream->reveal());
+        $request->withParsedBody(['foo' => 'bar', 'bar' => 'foo'])->shouldBeCalled()->willReturn($request->reveal());
+        $this->assertSame($request->reveal(), $this->strategy->parse($request->reveal()));
     }
 }
