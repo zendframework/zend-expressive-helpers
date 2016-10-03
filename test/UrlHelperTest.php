@@ -136,6 +136,21 @@ class UrlHelperTest extends TestCase
         $this->assertEquals('URL', $helper('resource', ['id' => 2]));
     }
 
+    public function testWillNotReuseRouteResultParamsIfReuseResultParamsFlagIsFalseWhenGeneratingUri()
+    {
+        $result = $this->prophesize(RouteResult::class);
+        $result->isFailure()->willReturn(false);
+        $result->getMatchedRouteName()->willReturn('resource');
+        $result->getMatchedParams()->willReturn(['id' => 1]);
+
+        $this->router->generateUri('resource', [])->willReturn('URL');
+
+        $helper = $this->createHelper();
+        $helper->setRouteResult($result->reveal());
+
+        $this->assertEquals('URL', $helper('resource', [], false));
+    }
+
     public function testCanInjectRouteResult()
     {
         $result = $this->prophesize(RouteResult::class);
