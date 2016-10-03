@@ -79,7 +79,7 @@ class JsonStrategyTest extends TestCase
     {
         $this->setExpectedException(
             MalformedRequestBodyException::class,
-            'Error when parsing JSON request body: Syntax error',
+            'Error when parsing JSON request body: ',
             400
         );
         $body = '{foobar}';
