@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - [#23](https://github.com/zendframework/zend-expressive-helpers/pull/23) adds support to UrlHelper for generating
   default route w/o parameters
+- [#9](https://github.com/zendframework/zend-expressive-helpers/pull/9) UrlHelper passes `$routerOptions` to underlying
+  router, if provided.
 
 ### Deprecated
 
