@@ -9,8 +9,8 @@ namespace Zend\Expressive\Helper;
 
 use InvalidArgumentException;
 use Zend\Expressive\Router\Exception\RuntimeException as RouterException;
-use Zend\Expressive\Router\RouterInterface;
 use Zend\Expressive\Router\RouteResult;
+use Zend\Expressive\Router\RouterInterface;
 
 class UrlHelper
 {
@@ -51,8 +51,12 @@ class UrlHelper
      *     routing failure.
      * @throws RouterException if router cannot generate URI for given route.
      */
-    public function __invoke($routeName = null, array $params = [], $reuseResultParams = true, array $routerOptions = [])
-    {
+    public function __invoke(
+        $routeName = null,
+        array $params = [],
+        $reuseResultParams = true,
+        array $routerOptions = []
+    ) {
         $result = $this->getRouteResult();
         if ($routeName === null && $result === null) {
             throw new Exception\RuntimeException(
