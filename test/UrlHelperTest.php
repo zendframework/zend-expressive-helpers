@@ -143,7 +143,7 @@ class UrlHelperTest extends TestCase
         $result->getMatchedRouteName()->willReturn('resource');
         $result->getMatchedParams()->willReturn(['id' => 1]);
 
-        $this->router->generateUri('resource', [])->willReturn('URL');
+        $this->router->generateUri('resource', [], [])->willReturn('URL');
 
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
@@ -188,7 +188,7 @@ class UrlHelperTest extends TestCase
         $result->getMatchedRouteName()->willReturn('foo');
         $result->getMatchedParams()->willReturn(['bar' => 'baz']);
 
-        $this->router->generateUri('foo', ['bar' => 'baz'])->willReturn('/foo/baz');
+        $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('/foo/baz');
 
         $helper = $this->createHelper();
         $helper->setBasePath('/prefix');
@@ -209,7 +209,7 @@ class UrlHelperTest extends TestCase
         $helper = \Mockery::mock(UrlHelper::class)->shouldDeferMissing();
         $helper->shouldReceive('__invoke')
             ->once()
-            ->with($route, $params)
+            ->with($route, $params, [])
             ->andReturn('it worked');
 
         $this->assertSame('it worked', $helper->generate($route, $params));
@@ -244,7 +244,7 @@ class UrlHelperTest extends TestCase
         $result->getMatchedRouteName()->willReturn('resource');
         $result->getMatchedParams()->shouldNotBeCalled();
 
-        $this->router->generateUri('resource', [])->willReturn('URL');
+        $this->router->generateUri('resource', [], [])->willReturn('URL');
 
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
@@ -256,6 +256,6 @@ class UrlHelperTest extends TestCase
     {
         $this->router->generateUri('foo', [], ['bar' => 'baz'])->willReturn('URL');
         $helper = $this->createHelper();
-        $this->assertEquals('URL', $helper('foo', [], ['bar' => 'baz']));
+        $this->assertEquals('URL', $helper('foo', [], true, ['bar' => 'baz']));
     }
 }
