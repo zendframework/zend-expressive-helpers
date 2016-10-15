@@ -148,7 +148,7 @@ class UrlHelperTest extends TestCase
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
 
-        $this->assertEquals('URL', $helper('resource', [], false));
+        $this->assertEquals('URL', $helper('resource', [], ['reuse_result_params' => false]));
     }
 
     public function testCanInjectRouteResult()
@@ -256,6 +256,56 @@ class UrlHelperTest extends TestCase
     {
         $this->router->generateUri('foo', [], ['bar' => 'baz'])->willReturn('URL');
         $helper = $this->createHelper();
-        $this->assertEquals('URL', $helper('foo', [], true, ['bar' => 'baz']));
+        $this->assertEquals('URL', $helper('foo', [], ['router' => ['bar' => 'baz']]));
+    }
+
+    public function testQueryParametersAreAppended()
+    {
+        $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('/foo/baz');
+        $helper = $this->createHelper();
+
+        $parameters = [
+            'route' => [
+                'bar' => 'baz'
+            ],
+            'query' => [
+                'qux' => 'quux'
+            ]
+        ];
+
+        $this->assertEquals('/foo/baz?qux=quux', $helper('foo', $parameters));
+    }
+
+    public function testFragmentIsAppended()
+    {
+        $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('/foo/baz');
+        $helper = $this->createHelper();
+
+        $parameters = [
+            'route' => [
+                'bar' => 'baz'
+            ],
+            'fragment' => 'corge'
+        ];
+
+        $this->assertEquals('/foo/baz#corge', $helper('foo', $parameters));
+    }
+
+    public function testQueryParametersAndFragmentAreAppended()
+    {
+        $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('/foo/baz');
+        $helper = $this->createHelper();
+
+        $parameters = [
+            'route' => [
+                'bar' => 'baz'
+            ],
+            'query' => [
+                'qux' => 'quux'
+            ],
+            'fragment' => 'corge'
+        ];
+
+        $this->assertEquals('/foo/baz?qux=quux#corge', $helper('foo', $parameters));
     }
 }

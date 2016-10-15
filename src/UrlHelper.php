@@ -41,9 +41,13 @@ class UrlHelper
      * Generate a URL based on a given route.
      *
      * @param string $routeName
-     * @param array $params
-     * @param bool $reuseResultParams
-     * @param array $routerOptions
+     * @param array $params     The parameters to build the url
+     *                          can have the following keys: route, query, fragment
+     * @param array $options    Can have the following keys: router, reuse_result_params
+     *                          - router must be an array containing the router options
+     *                          - reuse_result_params is a boolean to indicate if the
+     *                            current RouteResult parameters will be used, defaults to true
+     *
      * @return string
      * @throws Exception\RuntimeException if no route provided, and no result match
      *     present.
@@ -51,12 +55,8 @@ class UrlHelper
      *     routing failure.
      * @throws RouterException if router cannot generate URI for given route.
      */
-    public function __invoke(
-        $routeName = null,
-        array $params = [],
-        $reuseResultParams = true,
-        array $routerOptions = []
-    ) {
+    public function __invoke($routeName = null, $params = [], $options = [])
+    {
         $result = $this->getRouteResult();
         if ($routeName === null && $result === null) {
             throw new Exception\RuntimeException(
@@ -69,15 +69,45 @@ class UrlHelper
             $basePath = '';
         }
 
+        $query = null;
+        $fragment = null;
+
+        // Check if the route key exists, otherwise treat $params as v2 behavior
+        if (array_key_exists('route', $params) && is_array($params['route'])) {
+            if (array_key_exists('query', $params) && is_array($params['query'])) {
+                $query = $params['query'];
+            }
+
+            if (array_key_exists('fragment', $params)) {
+                $fragment = $params['fragment'];
+            }
+
+            $params = $params['route'];
+        }
+
+        $routerOptions = array_key_exists('router', $options) ? $options['router'] : [];
+
         if ($routeName === null) {
             return $basePath . $this->generateUriFromResult($params, $result, $routerOptions);
         }
 
-        if ($result && $reuseResultParams) {
+        if ($result
+            && (! array_key_exists('reuse_result_params', $options) || $options['reuse_result_params'] !== false)
+        ) {
             $params = $this->mergeParams($routeName, $result, $params);
         }
 
-        return $basePath . $this->router->generateUri($routeName, $params, $routerOptions);
+        $path = $basePath . $this->router->generateUri($routeName, $params, $routerOptions);
+
+        if ($query !== null) {
+            $path .= '?' . http_build_query($query);
+        }
+
+        if ($fragment !== null) {
+            $path .= '#' . $fragment;
+        }
+
+        return $path;
     }
 
     /**
