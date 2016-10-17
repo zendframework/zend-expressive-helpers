@@ -41,22 +41,24 @@ class UrlHelper
      * Generate a URL based on a given route.
      *
      * @param string $routeName
-     * @param array $params     The parameters to build the url
-     *                          can have the following keys: route, query, fragment
-     * @param array $options    Can have the following keys: router, reuse_result_params
-     *                          - router must be an array containing the router options
-     *                          - reuse_result_params is a boolean to indicate if the
-     *                            current RouteResult parameters will be used, defaults to true
+     * @param array  $routeParams
+     * @param array  $queryParams
+     * @param string $fragmentIdentifier
+     * @param array  $options       Can have the following keys:
+     *                              - router (array): contains options to be passed to the router
+     *                              - reuse_result_params (bool): indicates if the current RouteResult
+     *                              parameters will be used, defaults to true
      *
      * @return string
-     * @throws Exception\RuntimeException if no route provided, and no result match
-     *     present.
-     * @throws Exception\RuntimeException if no route provided, and result match is a
-     *     routing failure.
-     * @throws RouterException if router cannot generate URI for given route.
+     * @throws \Zend\Expressive\Helper\Exception\RuntimeException
      */
-    public function __invoke($routeName = null, $params = [], $options = [])
-    {
+    public function __invoke(
+        $routeName = null,
+        array $routeParams = [],
+        array $queryParams = [],
+        $fragmentIdentifier = '',
+        array $options = []
+    ) {
         $result = $this->getRouteResult();
         if ($routeName === null && $result === null) {
             throw new Exception\RuntimeException(
@@ -69,42 +71,31 @@ class UrlHelper
             $basePath = '';
         }
 
-        $query = null;
-        $fragment = null;
-
-        // Check if the route key exists, otherwise treat $params as v2 behavior
-        if (array_key_exists('route', $params) && is_array($params['route'])) {
-            if (array_key_exists('query', $params) && is_array($params['query'])) {
-                $query = $params['query'];
-            }
-
-            if (array_key_exists('fragment', $params)) {
-                $fragment = $params['fragment'];
-            }
-
-            $params = $params['route'];
-        }
-
+        // Get the options to be passed to the router
         $routerOptions = array_key_exists('router', $options) ? $options['router'] : [];
 
         if ($routeName === null) {
-            return $basePath . $this->generateUriFromResult($params, $result, $routerOptions);
+            return $basePath . $this->generateUriFromResult($routeParams, $result, $routerOptions);
         }
 
         if ($result
             && (! array_key_exists('reuse_result_params', $options) || $options['reuse_result_params'] !== false)
         ) {
-            $params = $this->mergeParams($routeName, $result, $params);
+            // Merge RouteResult with the route parameters
+            $routeParams = $this->mergeParams($routeName, $result, $routeParams);
         }
 
-        $path = $basePath . $this->router->generateUri($routeName, $params, $routerOptions);
+        // Generate the route
+        $path = $basePath . $this->router->generateUri($routeName, $routeParams, $routerOptions);
 
-        if ($query !== null) {
-            $path .= '?' . http_build_query($query);
+        // Append query parameters if there are any
+        if (count($queryParams) > 0) {
+            $path .= '?' . http_build_query($queryParams);
         }
 
-        if ($fragment !== null) {
-            $path .= '#' . $fragment;
+        // Append the fragment identifier
+        if ($fragmentIdentifier) {
+            $path .= '#' . $fragmentIdentifier;
         }
 
         return $path;

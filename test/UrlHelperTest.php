@@ -148,7 +148,7 @@ class UrlHelperTest extends TestCase
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
 
-        $this->assertEquals('URL', $helper('resource', [], ['reuse_result_params' => false]));
+        $this->assertEquals('URL', $helper('resource', [], [], null, ['reuse_result_params' => false]));
     }
 
     public function testCanInjectRouteResult()
@@ -256,7 +256,7 @@ class UrlHelperTest extends TestCase
     {
         $this->router->generateUri('foo', [], ['bar' => 'baz'])->willReturn('URL');
         $helper = $this->createHelper();
-        $this->assertEquals('URL', $helper('foo', [], ['router' => ['bar' => 'baz']]));
+        $this->assertEquals('URL', $helper('foo', [], [], null, ['router' => ['bar' => 'baz']]));
     }
 
     public function testQueryParametersAreAppended()
@@ -264,16 +264,7 @@ class UrlHelperTest extends TestCase
         $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('/foo/baz');
         $helper = $this->createHelper();
 
-        $parameters = [
-            'route' => [
-                'bar' => 'baz'
-            ],
-            'query' => [
-                'qux' => 'quux'
-            ]
-        ];
-
-        $this->assertEquals('/foo/baz?qux=quux', $helper('foo', $parameters));
+        $this->assertEquals('/foo/baz?qux=quux', $helper('foo', ['bar' => 'baz'], ['qux' => 'quux']));
     }
 
     public function testFragmentIsAppended()
@@ -281,14 +272,7 @@ class UrlHelperTest extends TestCase
         $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('/foo/baz');
         $helper = $this->createHelper();
 
-        $parameters = [
-            'route' => [
-                'bar' => 'baz'
-            ],
-            'fragment' => 'corge'
-        ];
-
-        $this->assertEquals('/foo/baz#corge', $helper('foo', $parameters));
+        $this->assertEquals('/foo/baz#corge', $helper('foo', ['bar' => 'baz'], [], 'corge'));
     }
 
     public function testQueryParametersAndFragmentAreAppended()
@@ -296,16 +280,6 @@ class UrlHelperTest extends TestCase
         $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('/foo/baz');
         $helper = $this->createHelper();
 
-        $parameters = [
-            'route' => [
-                'bar' => 'baz'
-            ],
-            'query' => [
-                'qux' => 'quux'
-            ],
-            'fragment' => 'corge'
-        ];
-
-        $this->assertEquals('/foo/baz?qux=quux#corge', $helper('foo', $parameters));
+        $this->assertEquals('/foo/baz?qux=quux#corge', $helper('foo', ['bar' => 'baz'], ['qux' => 'quux'], 'corge'));
     }
 }
