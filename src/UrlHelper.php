@@ -15,6 +15,13 @@ use Zend\Expressive\Router\RouterInterface;
 class UrlHelper
 {
     /**
+     * Regular expression used to validate fragment identifiers.
+     *
+     * @see RFC 3986: https://tools.ietf.org/html/rfc3986#section-3.5
+     */
+    const FRAGMENT_IDENTIFIER_REGEX = '/^([!$&\'()*+,;=._~:@\/?]|%[0-9a-fA-F]{2}|[a-zA-Z0-9])+$/';
+
+    /**
      * @var string
      */
     private $basePath = '/';
@@ -41,21 +48,23 @@ class UrlHelper
      * Generate a URL based on a given route.
      *
      * @param string $routeName
-     * @param array $params
-     * @param bool $reuseResultParams
-     * @param array $routerOptions
+     * @param array  $routeParams
+     * @param array  $queryParams
+     * @param string $fragmentIdentifier
+     * @param array  $options       Can have the following keys:
+     *                              - router (array): contains options to be passed to the router
+     *                              - reuse_result_params (bool): indicates if the current RouteResult
+     *                              parameters will be used, defaults to true
+     *
      * @return string
-     * @throws Exception\RuntimeException if no route provided, and no result match
-     *     present.
-     * @throws Exception\RuntimeException if no route provided, and result match is a
-     *     routing failure.
-     * @throws RouterException if router cannot generate URI for given route.
+     * @throws \Zend\Expressive\Helper\Exception\RuntimeException
      */
     public function __invoke(
         $routeName = null,
-        array $params = [],
-        $reuseResultParams = true,
-        array $routerOptions = []
+        array $routeParams = [],
+        array $queryParams = [],
+        $fragmentIdentifier = '',
+        array $options = []
     ) {
         $result = $this->getRouteResult();
         if ($routeName === null && $result === null) {
@@ -69,15 +78,38 @@ class UrlHelper
             $basePath = '';
         }
 
+        // Get the options to be passed to the router
+        $routerOptions = array_key_exists('router', $options) ? $options['router'] : [];
+
         if ($routeName === null) {
-            return $basePath . $this->generateUriFromResult($params, $result, $routerOptions);
+            return $basePath . $this->generateUriFromResult($routeParams, $result, $routerOptions);
         }
+
+        $reuseResultParams = !isset($options['reuse_result_params']) || (bool) $options['reuse_result_params'];
 
         if ($result && $reuseResultParams) {
-            $params = $this->mergeParams($routeName, $result, $params);
+            // Merge RouteResult with the route parameters
+            $routeParams = $this->mergeParams($routeName, $result, $routeParams);
         }
 
-        return $basePath . $this->router->generateUri($routeName, $params, $routerOptions);
+        // Generate the route
+        $path = $basePath . $this->router->generateUri($routeName, $routeParams, $routerOptions);
+
+        // Append query parameters if there are any
+        if (count($queryParams) > 0) {
+            $path .= '?' . http_build_query($queryParams);
+        }
+
+        // Append the fragment identifier
+        if (!empty($fragmentIdentifier) || (string) $fragmentIdentifier === '0') {
+            if (!preg_match(self::FRAGMENT_IDENTIFIER_REGEX, $fragmentIdentifier)) {
+                throw new \InvalidArgumentException('Fragment identifier must conform to RFC 3986', 400);
+            }
+
+            $path .= '#' . $fragmentIdentifier;
+        }
+
+        return $path;
     }
 
     /**
@@ -85,19 +117,16 @@ class UrlHelper
      *
      * Proxies to __invoke().
      *
-     * @param string $route
-     * @param array $params
-     * @param array $routerOptions
-     * @return string
-     * @throws Exception\RuntimeException if no route provided, and no result match
-     *     present.
-     * @throws Exception\RuntimeException if no route provided, and result match is a
-     *     routing failure.
-     * @throws RouterException if router cannot generate URI for given route.
+     * @see UrlHelper::__invoke()
      */
-    public function generate($route = null, array $params = [], array $routerOptions = [])
-    {
-        return $this($route, $params, $routerOptions);
+    public function generate(
+        $routeName = null,
+        array $routeParams = [],
+        array $queryParams = [],
+        $fragmentIdentifier = '',
+        array $options = []
+    ) {
+        return $this($routeName, $routeParams, $queryParams, $fragmentIdentifier, $options);
     }
 
     /**
