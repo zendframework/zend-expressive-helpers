@@ -78,9 +78,9 @@ class UrlHelper
             return $basePath . $this->generateUriFromResult($routeParams, $result, $routerOptions);
         }
 
-        if ($result
-            && (! array_key_exists('reuse_result_params', $options) || $options['reuse_result_params'] !== false)
-        ) {
+        $reuseResultParams = !isset($options['reuse_result_params']) || (bool) $options['reuse_result_params'];
+
+        if ($result && $reuseResultParams) {
             // Merge RouteResult with the route parameters
             $routeParams = $this->mergeParams($routeName, $result, $routeParams);
         }
