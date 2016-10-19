@@ -290,4 +290,16 @@ class UrlHelperTest extends TestCase
             $helper('foo', ['bar' => 'baz'], $queryParams, $fragmentIdentifier)
         );
     }
+
+    public function testRejectsInvalidFragmentIdentifier()
+    {
+        $this->setExpectedException(
+            \InvalidArgumentException::class,
+            'Fragment identifier must conform to RFC 3986',
+            400
+        );
+
+        $helper = $this->createHelper();
+        $helper('foo', [], [], 'this#will#throw#an#exception');
+    }
 }

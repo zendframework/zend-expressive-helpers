@@ -15,6 +15,13 @@ use Zend\Expressive\Router\RouterInterface;
 class UrlHelper
 {
     /**
+     * Regular expression used to validate fragment identifiers.
+     *
+     * @see RFC 3986: https://tools.ietf.org/html/rfc3986#section-3.5
+     */
+    const FRAGMENT_IDENTIFIER_REGEX = '/^([!$&\'()*+,;=._~:@\/?]|%[0-9a-fA-F]{2}|[a-zA-Z0-9])+$/';
+
+    /**
      * @var string
      */
     private $basePath = '/';
@@ -95,6 +102,10 @@ class UrlHelper
 
         // Append the fragment identifier
         if (!empty($fragmentIdentifier) || (string) $fragmentIdentifier === '0') {
+            if (!preg_match(self::FRAGMENT_IDENTIFIER_REGEX, $fragmentIdentifier)) {
+                throw new \InvalidArgumentException('Fragment identifier must conform to RFC 3986', 400);
+            }
+
             $path .= '#' . $fragmentIdentifier;
         }
 
