@@ -202,16 +202,22 @@ class UrlHelperTest extends TestCase
 
     public function testGenerateProxiesToInvokeMethod()
     {
-        $route = 'foo';
-        $params = ['bar'];
+        $routeName = 'foo';
+        $routeParams = ['bar'];
+        $queryParams = ['foo' => 'bar'];
+        $fragmentIdentifier = 'foobar';
+        $options = ['router' => ['foobar' => 'baz'], 'reuse_result_params' => false];
 
         $helper = \Mockery::mock(UrlHelper::class)->shouldDeferMissing();
         $helper->shouldReceive('__invoke')
             ->once()
-            ->with($route, $params, [])
+            ->with($routeName, $routeParams, $queryParams, $fragmentIdentifier, $options)
             ->andReturn('it worked');
 
-        $this->assertSame('it worked', $helper->generate($route, $params));
+        $this->assertSame(
+            'it worked',
+            $helper->generate($routeName, $routeParams, $queryParams, $fragmentIdentifier, $options)
+        );
     }
 
     public function invalidBasePathProvider()

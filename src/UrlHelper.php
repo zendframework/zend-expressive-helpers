@@ -106,19 +106,16 @@ class UrlHelper
      *
      * Proxies to __invoke().
      *
-     * @param string $route
-     * @param array $params
-     * @param array $routerOptions
-     * @return string
-     * @throws Exception\RuntimeException if no route provided, and no result match
-     *     present.
-     * @throws Exception\RuntimeException if no route provided, and result match is a
-     *     routing failure.
-     * @throws RouterException if router cannot generate URI for given route.
+     * @see UrlHelper::__invoke()
      */
-    public function generate($route = null, array $params = [], array $routerOptions = [])
-    {
-        return $this($route, $params, $routerOptions);
+    public function generate(
+        $routeName = null,
+        array $routeParams = [],
+        array $queryParams = [],
+        $fragmentIdentifier = '',
+        array $options = []
+    ) {
+        return $this($routeName, $routeParams, $queryParams, $fragmentIdentifier, $options);
     }
 
     /**
