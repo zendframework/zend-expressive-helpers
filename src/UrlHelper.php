@@ -94,7 +94,7 @@ class UrlHelper
         }
 
         // Append the fragment identifier
-        if ($fragmentIdentifier) {
+        if (!empty($fragmentIdentifier) || (string) $fragmentIdentifier === '0') {
             $path .= '#' . $fragmentIdentifier;
         }
 
