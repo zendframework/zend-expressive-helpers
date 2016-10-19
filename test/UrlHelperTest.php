@@ -269,7 +269,6 @@ class UrlHelperTest extends TestCase
         // @codingStandardsIgnoreStart
         return [
             'none'           => [[], null, ''],
-            'empty-fragment' => [[], '', ''],
             'query'          => [['qux' => 'quux'], null, '?qux=quux'],
             'fragment'       => [[], 'corge', '#corge'],
             'query+fragment' => [['qux' => 'quux'], 'corge', '?qux=quux#corge'],
@@ -291,7 +290,18 @@ class UrlHelperTest extends TestCase
         );
     }
 
-    public function testRejectsInvalidFragmentIdentifier()
+    public function invalidFragmentProvider()
+    {
+        return [
+            [''],
+            ['#'],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidFragmentProvider
+     */
+    public function testRejectsInvalidFragmentIdentifier($fragmentIdentifier)
     {
         $this->setExpectedException(
             \InvalidArgumentException::class,
@@ -300,6 +310,6 @@ class UrlHelperTest extends TestCase
         );
 
         $helper = $this->createHelper();
-        $helper('foo', [], [], 'this#will#throw#an#exception');
+        $helper('foo', [], [], $fragmentIdentifier);
     }
 }

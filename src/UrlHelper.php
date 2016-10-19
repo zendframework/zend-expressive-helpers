@@ -63,7 +63,7 @@ class UrlHelper
         $routeName = null,
         array $routeParams = [],
         array $queryParams = [],
-        $fragmentIdentifier = '',
+        $fragmentIdentifier = null,
         array $options = []
     ) {
         $result = $this->getRouteResult();
@@ -101,7 +101,7 @@ class UrlHelper
         }
 
         // Append the fragment identifier
-        if (!empty($fragmentIdentifier) || (string) $fragmentIdentifier === '0') {
+        if ($fragmentIdentifier !== null) {
             if (!preg_match(self::FRAGMENT_IDENTIFIER_REGEX, $fragmentIdentifier)) {
                 throw new \InvalidArgumentException('Fragment identifier must conform to RFC 3986', 400);
             }
