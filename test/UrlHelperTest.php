@@ -9,13 +9,12 @@
 
 namespace ZendTest\Expressive\Helper;
 
-use ArrayObject;
 use PHPUnit_Framework_TestCase as TestCase;
 use Zend\Expressive\Helper\Exception\RuntimeException;
 use Zend\Expressive\Helper\UrlHelper;
 use Zend\Expressive\Router\Exception\RuntimeException as RouterException;
-use Zend\Expressive\Router\RouterInterface;
 use Zend\Expressive\Router\RouteResult;
+use Zend\Expressive\Router\RouterInterface;
 
 class UrlHelperTest extends TestCase
 {
@@ -148,7 +147,7 @@ class UrlHelperTest extends TestCase
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
 
-        $this->assertEquals('URL', $helper('resource', [], false));
+        $this->assertEquals('URL', $helper('resource', [], [], null, ['reuse_result_params' => false]));
     }
 
     public function testCanInjectRouteResult()
@@ -256,6 +255,33 @@ class UrlHelperTest extends TestCase
     {
         $this->router->generateUri('foo', [], ['bar' => 'baz'])->willReturn('URL');
         $helper = $this->createHelper();
-        $this->assertEquals('URL', $helper('foo', [], true, ['bar' => 'baz']));
+        $this->assertEquals('URL', $helper('foo', [], [], null, ['router' => ['bar' => 'baz']]));
+    }
+
+    public function queryParametersAndFragmentProvider()
+    {
+        // @codingStandardsIgnoreStart
+        return [
+            'none'           => [[], null, ''],
+            'empty-fragment' => [[], '', ''],
+            'query'          => [['qux' => 'quux'], null, '?qux=quux'],
+            'fragment'       => [[], 'corge', '#corge'],
+            'query+fragment' => [['qux' => 'quux'], 'corge', '?qux=quux#corge'],
+        ];
+        // @codingStandardsIgnoreEnd
+    }
+
+    /**
+     * @dataProvider queryParametersAndFragmentProvider
+     */
+    public function testQueryParametersAndFragment(array $queryParams, $fragmentIdentifier, $expected)
+    {
+        $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('/foo/baz');
+        $helper = $this->createHelper();
+
+        $this->assertEquals(
+            '/foo/baz' . $expected,
+            $helper('foo', ['bar' => 'baz'], $queryParams, $fragmentIdentifier)
+        );
     }
 }
