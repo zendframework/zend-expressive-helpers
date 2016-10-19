@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file, in reverse 
   default route w/o parameters
 - [#9](https://github.com/zendframework/zend-expressive-helpers/pull/9) UrlHelper passes `$routerOptions` to underlying
   router, if provided.
+- [#27](https://github.com/zendframework/zend-expressive-helpers/pull/27) adds query params and fragment identifier
+   support to `UrlHelper`
 
 ### Deprecated
 
