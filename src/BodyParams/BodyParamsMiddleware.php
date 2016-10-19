@@ -9,7 +9,6 @@ namespace Zend\Expressive\Helper\BodyParams;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Zend\Expressive\Helper\Exception\MalformedRequestBodyException;
 
 class BodyParamsMiddleware
 {
