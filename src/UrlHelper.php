@@ -19,7 +19,7 @@ class UrlHelper
      *
      * @see RFC 3986: https://tools.ietf.org/html/rfc3986#section-3.5
      */
-    const FRAGMENT_IDENTIFIER_REGEX = '/^([!$&\'()*+,;=._~:@\/?]|%[0-9a-fA-F]{2}|[a-zA-Z0-9])+$/';
+    const FRAGMENT_IDENTIFIER_REGEX = '/^([!$&\'()*+,;=._~:@\/?-]|%[0-9a-fA-F]{2}|[a-zA-Z0-9])+$/';
 
     /**
      * @var string

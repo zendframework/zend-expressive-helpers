@@ -271,7 +271,7 @@ class UrlHelperTest extends TestCase
             'none'           => [[], null, ''],
             'query'          => [['qux' => 'quux'], null, '?qux=quux'],
             'fragment'       => [[], 'corge', '#corge'],
-            'query+fragment' => [['qux' => 'quux'], 'corge', '?qux=quux#corge'],
+            'query+fragment' => [['qux' => 'quux'], 'cor-ge', '?qux=quux#cor-ge'],
         ];
         // @codingStandardsIgnoreEnd
     }
