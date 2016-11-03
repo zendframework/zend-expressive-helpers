@@ -90,4 +90,21 @@ class JsonStrategyTest extends TestCase
 
         $this->strategy->parse($request->reveal());
     }
+
+    public function testEmptyRequestBodyYieldsNullParsedBodyWithNoExceptionThrown()
+    {
+        $body = '';
+        $stream = $this->prophesize(StreamInterface::class);
+        $stream->__toString()->willReturn($body);
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getBody()->willReturn($stream->reveal());
+        $request->withAttribute('rawBody', $body)->will(function () use ($request) {
+            return $request->reveal();
+        });
+        $request->withParsedBody(null)->will(function () use ($request) {
+            return $request->reveal();
+        });
+
+        $this->assertSame($request->reveal(), $this->strategy->parse($request->reveal()));
+    }
 }
