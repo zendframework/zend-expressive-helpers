@@ -30,7 +30,7 @@ class JsonStrategy implements StrategyInterface
         $rawBody = (string) $request->getBody();
         $parsedBody = json_decode($rawBody, true);
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
+        if (! empty($rawBody) && json_last_error() !== JSON_ERROR_NONE) {
             throw new MalformedRequestBodyException('Error when parsing JSON request body: ' . json_last_error_msg());
         }
 
