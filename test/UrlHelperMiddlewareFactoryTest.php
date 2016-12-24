@@ -37,7 +37,7 @@ class UrlHelperMiddlewareFactoryTest extends TestCase
         $this->injectContainer(UrlHelper::class, $helper);
 
         $factory = new UrlHelperMiddlewareFactory();
-        $middleware =$factory($this->container->reveal());
+        $middleware = $factory($this->container->reveal());
         $this->assertInstanceOf(UrlHelperMiddleware::class, $middleware);
         $this->assertAttributeSame($helper, 'helper', $middleware);
     }
@@ -51,6 +51,6 @@ class UrlHelperMiddlewareFactoryTest extends TestCase
         );
         $factory = new UrlHelperMiddlewareFactory();
         $this->setExpectedException(MissingHelperException::class);
-        $middleware =$factory($this->container->reveal());
+        $middleware = $factory($this->container->reveal());
     }
 }

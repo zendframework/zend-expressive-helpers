@@ -8,9 +8,10 @@ matrix:
     - php: 5.5
     - php: 5.6
       env:
-        - EXECUTE_CS_CHECK=true
+        - CS_CHECK=true
+        - TEST_COVERAGE=true
     - php: 7
-    - php: hhvm 
+    - php: hhvm
   allow_failures:
     - php: hhvm
 
@@ -18,12 +19,13 @@ before_install:
   - composer self-update
 
 install:
+  - if [[ $TEST_COVERAGE == 'true' ]]; then composer require --dev --no-update michaelmoussa/php-coverage-checker:^1.1.0 ; fi
   - travis_retry composer install --no-interaction --ignore-platform-reqs --prefer-source
   - composer info -i
 
 script:
-  - composer test
-  - if [[ $EXECUTE_CS_CHECK == 'true' ]]; then composer cs ; fi
+  - if [[ $TEST_COVERAGE == 'true' ]]; then composer test-coverage && vendor/bin/php-coverage-checker clover.xml 100 ; else composer test ; fi
+  - if [[ $CS_CHECK == 'true' ]]; then composer cs ; fi
 
 notifications:
   email: true
