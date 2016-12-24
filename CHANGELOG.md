@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 2.1.1 - TBD
+## 2.1.1 - 2016-12-23
 
 ### Added
 
@@ -18,7 +18,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
-- Nothing.
+- [#29](https://github.com/zendframework/zend-expressive-helpers/pull/29) Don't throw exception on empty JSON body
 
 ## 2.1.0 - 2016-10-02
 
