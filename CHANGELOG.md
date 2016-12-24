@@ -2,11 +2,12 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 2.2.0 - TBD
+## 2.2.0 - 2016-12-23
 
 ### Added
 
-- Nothing.
+- [#30](https://github.com/zendframework/zend-expressive-helpers/pull/30) Use new ZF coding standard
+- [#31](https://github.com/zendframework/zend-expressive-helpers/pull/32) Check to ensure 100% test coverage is retained
 
 ### Deprecated
 
