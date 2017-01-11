@@ -2,11 +2,33 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 2.2.1 - TBD
+## 3.0.0 - 2016-01-11
 
 ### Added
 
-- Nothing.
+- [#23](https://github.com/zendframework/zend-expressive-helpers/pull/23) adds
+  support to `UrlHelper` for generating a URI based on the currently matched
+  route and parameters.
+
+- [#9](https://github.com/zendframework/zend-expressive-helpers/pull/9) updates
+  `UrlHelper` to pass `$routerOptions` to the underlying router, if provided.
+
+  - **BREAKING CHANGE:** This change adds an _optional_ `$options` parameter to
+    the `UrlHelper::__invoke()` and `UrlHelper::generate()` methods. Users who
+    have extended this class **MUST** update the method signatures accordingly
+    to avoid a PHP Fatal Error. If you have not extended this class, no further
+    action is required for compatibility.
+
+- [#27](https://github.com/zendframework/zend-expressive-helpers/pull/27) adds
+  query string argument and fragment identifier support to `UrlHelper`.
+
+  - **BREAKING CHANGE:** This change adds _optional_ `$routeParams`,
+    `$queryParams`, and `$fragmentIdentifier` parameters to the
+    `UrlHelper::__invoke()` and `UrlHelper::generate()` methods, in addition to
+    the aforementioned `$options` parameter. Users who have extended this class
+    **MUST** update the method signatures accordingly to avoid a PHP Fatal
+    Error. If you have not extended this class, no further action is required
+    for compatibility.
 
 ### Deprecated
 
@@ -24,8 +46,14 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Added
 
-- [#30](https://github.com/zendframework/zend-expressive-helpers/pull/30) Use new ZF coding standard
-- [#31](https://github.com/zendframework/zend-expressive-helpers/pull/32) Check to ensure 100% test coverage is retained
+- Nothing.
+
+### Changes
+
+- [#30](https://github.com/zendframework/zend-expressive-helpers/pull/30) Use
+  new ZF coding standard
+- [#31](https://github.com/zendframework/zend-expressive-helpers/pull/32) Check
+  to ensure 100% test coverage is retained
 
 ### Deprecated
 

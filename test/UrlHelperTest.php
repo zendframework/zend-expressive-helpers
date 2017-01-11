@@ -1,21 +1,18 @@
 <?php
 /**
- * Zend Framework (http://framework.zend.com/)
- *
- * @see       https://github.com/zendframework/zend-expressive for the canonical source repository
- * @copyright Copyright (c) 2015 Zend Technologies USA Inc. (http://www.zend.com)
- * @license   https://github.com/zendframework/zend-expressive/blob/master/LICENSE.md New BSD License
+ * @see       https://github.com/zendframework/zend-expressive-helpers for the canonical source repository
+ * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   https://github.com/zendframework/zend-expressive-helpers/blob/master/LICENSE.md New BSD License
  */
 
 namespace ZendTest\Expressive\Helper;
 
-use ArrayObject;
 use PHPUnit_Framework_TestCase as TestCase;
 use Zend\Expressive\Helper\Exception\RuntimeException;
 use Zend\Expressive\Helper\UrlHelper;
 use Zend\Expressive\Router\Exception\RuntimeException as RouterException;
-use Zend\Expressive\Router\RouterInterface;
 use Zend\Expressive\Router\RouteResult;
+use Zend\Expressive\Router\RouterInterface;
 
 class UrlHelperTest extends TestCase
 {
@@ -48,7 +45,7 @@ class UrlHelperTest extends TestCase
 
     public function testRaisesExceptionOnInvocationIfRouterCannotGenerateUriForRouteProvided()
     {
-        $this->router->generateUri('foo', [])->willThrow(RouterException::class);
+        $this->router->generateUri('foo', [], [])->willThrow(RouterException::class);
         $helper = $this->createHelper();
         $this->setExpectedException(RouterException::class);
         $helper('foo');
@@ -61,7 +58,7 @@ class UrlHelperTest extends TestCase
         $result->getMatchedRouteName()->willReturn('foo');
         $result->getMatchedParams()->willReturn(['bar' => 'baz']);
 
-        $this->router->generateUri('foo', ['bar' => 'baz'])->willReturn('URL');
+        $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('URL');
 
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
@@ -76,7 +73,7 @@ class UrlHelperTest extends TestCase
         $result->getMatchedRouteName()->willReturn('foo');
         $result->getMatchedParams()->willReturn(['bar' => 'baz']);
 
-        $this->router->generateUri('foo', ['bar' => 'baz', 'baz' => 'bat'])->willReturn('URL');
+        $this->router->generateUri('foo', ['bar' => 'baz', 'baz' => 'bat'], [])->willReturn('URL');
 
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
@@ -86,7 +83,7 @@ class UrlHelperTest extends TestCase
 
     public function testWhenRouteProvidedTheHelperDelegatesToTheRouterToGenerateUrl()
     {
-        $this->router->generateUri('foo', ['bar' => 'baz'])->willReturn('URL');
+        $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('URL');
         $helper = $this->createHelper();
         $this->assertEquals('URL', $helper('foo', ['bar' => 'baz']));
     }
@@ -98,7 +95,7 @@ class UrlHelperTest extends TestCase
         $result->getMatchedRouteName()->willReturn('not-resource');
         $result->getMatchedParams()->shouldNotBeCalled();
 
-        $this->router->generateUri('resource', [])->willReturn('URL');
+        $this->router->generateUri('resource', [], [])->willReturn('URL');
 
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
@@ -113,7 +110,7 @@ class UrlHelperTest extends TestCase
         $result->getMatchedRouteName()->willReturn('resource');
         $result->getMatchedParams()->willReturn(['id' => 1]);
 
-        $this->router->generateUri('resource', ['id' => 1, 'version' => 2])->willReturn('URL');
+        $this->router->generateUri('resource', ['id' => 1, 'version' => 2], [])->willReturn('URL');
 
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
@@ -128,12 +125,27 @@ class UrlHelperTest extends TestCase
         $result->getMatchedRouteName()->willReturn('resource');
         $result->getMatchedParams()->willReturn(['id' => 1]);
 
-        $this->router->generateUri('resource', ['id' => 2])->willReturn('URL');
+        $this->router->generateUri('resource', ['id' => 2], [])->willReturn('URL');
 
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
 
         $this->assertEquals('URL', $helper('resource', ['id' => 2]));
+    }
+
+    public function testWillNotReuseRouteResultParamsIfReuseResultParamsFlagIsFalseWhenGeneratingUri()
+    {
+        $result = $this->prophesize(RouteResult::class);
+        $result->isFailure()->willReturn(false);
+        $result->getMatchedRouteName()->willReturn('resource');
+        $result->getMatchedParams()->willReturn(['id' => 1]);
+
+        $this->router->generateUri('resource', [], [])->willReturn('URL');
+
+        $helper = $this->createHelper();
+        $helper->setRouteResult($result->reveal());
+
+        $this->assertEquals('URL', $helper('resource', [], [], null, ['reuse_result_params' => false]));
     }
 
     public function testCanInjectRouteResult()
@@ -160,7 +172,7 @@ class UrlHelperTest extends TestCase
 
     public function testBasePathIsPrependedToGeneratedPath()
     {
-        $this->router->generateUri('foo', ['bar' => 'baz'])->willReturn('/foo/baz');
+        $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('/foo/baz');
         $helper = $this->createHelper();
         $helper->setBasePath('/prefix');
         $this->assertEquals('/prefix/foo/baz', $helper('foo', ['bar' => 'baz']));
@@ -173,7 +185,7 @@ class UrlHelperTest extends TestCase
         $result->getMatchedRouteName()->willReturn('foo');
         $result->getMatchedParams()->willReturn(['bar' => 'baz']);
 
-        $this->router->generateUri('foo', ['bar' => 'baz'])->willReturn('/foo/baz');
+        $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('/foo/baz');
 
         $helper = $this->createHelper();
         $helper->setBasePath('/prefix');
@@ -188,16 +200,22 @@ class UrlHelperTest extends TestCase
 
     public function testGenerateProxiesToInvokeMethod()
     {
-        $route = 'foo';
-        $params = ['bar'];
+        $routeName = 'foo';
+        $routeParams = ['bar'];
+        $queryParams = ['foo' => 'bar'];
+        $fragmentIdentifier = 'foobar';
+        $options = ['router' => ['foobar' => 'baz'], 'reuse_result_params' => false];
 
         $helper = \Mockery::mock(UrlHelper::class)->shouldDeferMissing();
         $helper->shouldReceive('__invoke')
             ->once()
-            ->with($route, $params)
+            ->with($routeName, $routeParams, $queryParams, $fragmentIdentifier, $options)
             ->andReturn('it worked');
 
-        $this->assertSame('it worked', $helper->generate($route, $params));
+        $this->assertSame(
+            'it worked',
+            $helper->generate($routeName, $routeParams, $queryParams, $fragmentIdentifier, $options)
+        );
     }
 
     public function invalidBasePathProvider()
@@ -229,11 +247,67 @@ class UrlHelperTest extends TestCase
         $result->getMatchedRouteName()->willReturn('resource');
         $result->getMatchedParams()->shouldNotBeCalled();
 
-        $this->router->generateUri('resource', [])->willReturn('URL');
+        $this->router->generateUri('resource', [], [])->willReturn('URL');
 
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
 
         $this->assertEquals('URL', $helper('resource'));
+    }
+
+    public function testOptionsArePassedToRouter()
+    {
+        $this->router->generateUri('foo', [], ['bar' => 'baz'])->willReturn('URL');
+        $helper = $this->createHelper();
+        $this->assertEquals('URL', $helper('foo', [], [], null, ['router' => ['bar' => 'baz']]));
+    }
+
+    public function queryParametersAndFragmentProvider()
+    {
+        // @codingStandardsIgnoreStart
+        return [
+            'none'           => [[], null, ''],
+            'query'          => [['qux' => 'quux'], null, '?qux=quux'],
+            'fragment'       => [[], 'corge', '#corge'],
+            'query+fragment' => [['qux' => 'quux'], 'cor-ge', '?qux=quux#cor-ge'],
+        ];
+        // @codingStandardsIgnoreEnd
+    }
+
+    /**
+     * @dataProvider queryParametersAndFragmentProvider
+     */
+    public function testQueryParametersAndFragment(array $queryParams, $fragmentIdentifier, $expected)
+    {
+        $this->router->generateUri('foo', ['bar' => 'baz'], [])->willReturn('/foo/baz');
+        $helper = $this->createHelper();
+
+        $this->assertEquals(
+            '/foo/baz' . $expected,
+            $helper('foo', ['bar' => 'baz'], $queryParams, $fragmentIdentifier)
+        );
+    }
+
+    public function invalidFragmentProvider()
+    {
+        return [
+            [''],
+            ['#'],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidFragmentProvider
+     */
+    public function testRejectsInvalidFragmentIdentifier($fragmentIdentifier)
+    {
+        $this->setExpectedException(
+            \InvalidArgumentException::class,
+            'Fragment identifier must conform to RFC 3986',
+            400
+        );
+
+        $helper = $this->createHelper();
+        $helper('foo', [], [], $fragmentIdentifier);
     }
 }
