@@ -26,7 +26,8 @@
         "phpunit/phpunit": "^4.7",
         "zendframework/zend-diactoros": "^1.2",
         "mockery/mockery": "^0.9.5",
-        "zendframework/zend-coding-standard": "~1.0.0"
+        "zendframework/zend-coding-standard": "~1.0.0",
+        "malukenho/docheader": "^0.1.5"
     },
     "autoload": {
       "psr-4": {
@@ -45,14 +46,16 @@
     },
     "scripts": {
         "check": [
+            "@license-check",
             "@cs",
             "@test"
         ],
         "check-coverage": "vendor/bin/php-coverage-checker clover.xml 100",
-        "coveralls": "coveralls -v",
         "cs": "phpcs",
         "cs-fix": "phpcbf",
+        "license-check": "docheader check src/ test/",
         "test": "phpunit",
-        "test-coverage": "phpunit --coverage-clover clover.xml"
+        "test-coverage": "phpunit --coverage-clover clover.xml",
+        "upload-coverage": "coveralls -v"
     }
 }
