@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 3.0.0 - 2016-12-??
+## 3.0.0 - 2016-01-11
 
 ### Added
 
@@ -10,8 +10,16 @@ All notable changes to this project will be documented in this file, in reverse 
   default route w/o parameters
 - [#9](https://github.com/zendframework/zend-expressive-helpers/pull/9) UrlHelper passes `$routerOptions` to underlying
   router, if provided.
+  - **BREAKING CHANGE:** This change adds an _optional_ `$options` parameter to the `UrlHelper::__invoke(...)` and
+    `UrlHelper::generate(...)` methods. Users who have extended this class **MUST** update the method signatures
+    accordingly to avoid a PHP Fatal Error. If you have not extended this class, no further action is required for
+    compatibility.
 - [#27](https://github.com/zendframework/zend-expressive-helpers/pull/27) adds query params and fragment identifier
    support to `UrlHelper`
+  - **BREAKING CHANGE:** This change adds _optional_ `$routeParams`, `$queryParams`, and `$fragmentIdentifier` parameters
+    to the `UrlHelper::__invoke(...)` and `UrlHelper::generate(...)` methods, in addition to the aforementioned
+    `$options` parameter. Users who have extended this class **MUST** update the method signatures accordingly to
+    avoid a PHP Fatal Error. If you have not extended this class, no further action is required for compatibility.
 
 ### Deprecated
 
