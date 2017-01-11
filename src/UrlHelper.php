@@ -85,7 +85,7 @@ class UrlHelper
             return $basePath . $this->generateUriFromResult($routeParams, $result, $routerOptions);
         }
 
-        $reuseResultParams = !isset($options['reuse_result_params']) || (bool) $options['reuse_result_params'];
+        $reuseResultParams = ! isset($options['reuse_result_params']) || (bool) $options['reuse_result_params'];
 
         if ($result && $reuseResultParams) {
             // Merge RouteResult with the route parameters
@@ -102,7 +102,7 @@ class UrlHelper
 
         // Append the fragment identifier
         if ($fragmentIdentifier !== null) {
-            if (!preg_match(self::FRAGMENT_IDENTIFIER_REGEX, $fragmentIdentifier)) {
+            if (! preg_match(self::FRAGMENT_IDENTIFIER_REGEX, $fragmentIdentifier)) {
                 throw new \InvalidArgumentException('Fragment identifier must conform to RFC 3986', 400);
             }
 
