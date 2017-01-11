@@ -12,16 +12,15 @@
     ],
     "extra": {
         "branch-alias": {
-            "dev-master": "2.2-dev",
-            "dev-develop": "2.3-dev",
-            "dev-dev-3.0.0": "3.0.0-dev"
+            "dev-master": "3.0-dev",
+            "dev-develop": "3.1-dev"
         }
     },
     "require": {
-        "php": "^5.5 || ^7.0",
+        "php": "^5.6 || ^7.0",
         "container-interop/container-interop": "^1.1",
         "psr/http-message": "^1.0",
-        "zendframework/zend-expressive-router": "^1.1"
+        "zendframework/zend-expressive-router": "^2.0.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^4.7",
@@ -49,6 +48,8 @@
             "@cs",
             "@test"
         ],
+        "check-coverage": "vendor/bin/php-coverage-checker clover.xml 100",
+        "coveralls": "coveralls -v",
         "cs": "phpcs",
         "cs-fix": "phpcbf",
         "test": "phpunit",
