@@ -16,16 +16,23 @@ matrix:
     - php: hhvm
 
 before_install:
+  - if [[ $TEST_COVERAGE != 'true' ]]; then phpenv config-rm xdebug.ini || return 0 ; fi
   - composer self-update
+  - if [[ $TEST_COVERAGE == 'true' ]]; then composer require --dev --no-update satooshi/php-coveralls:^1.0 ; fi
+  - if [[ $TEST_COVERAGE == 'true' ]]; then composer require --dev --no-update michaelmoussa/php-coverage-checker:^1.1.0 ; fi
 
 install:
-  - if [[ $TEST_COVERAGE == 'true' ]]; then composer require --dev --no-update michaelmoussa/php-coverage-checker:^1.1.0 ; fi
-  - travis_retry composer install --no-interaction --ignore-platform-reqs --prefer-source
+  - travis_retry composer install --no-interaction
   - composer info -i
 
 script:
-  - if [[ $TEST_COVERAGE == 'true' ]]; then composer test-coverage && vendor/bin/php-coverage-checker clover.xml 100 ; else composer test ; fi
+  - if [[ $TEST_COVERAGE != 'true' ]]; then composer test ; fi
+  - if [[ $TEST_COVERAGE == 'true' ]]; then composer test-coverage ; fi
+  - if [[ $TEST_COVERAGE == 'true' ]]; then composer check-coverage ; fi
   - if [[ $CS_CHECK == 'true' ]]; then composer cs ; fi
+
+after_script:
+  - if [[ $TEST_COVERAGE == 'true' ]]; then composer coveralls ; fi
 
 notifications:
   email: true
