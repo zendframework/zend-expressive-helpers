@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 3.0.1 - TBD
+## 3.0.1 - 2017-01-12
 
 ### Added
 
@@ -18,7 +18,11 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
-- Nothing.
+- [#34](https://github.com/zendframework/zend-expressive-helpers/pull/34) fixes
+  the signature of `UrlHelper::generate()` to match that of
+  `UrlHelper::__invoke()`, and, more specifically, ensuring that the default
+  `$fragment` value is `null` and not `''`, fixing a subtle issue when calling
+  `generate()` without a `$fragment` value.
 
 ## 3.0.0 - 2016-01-11
 
