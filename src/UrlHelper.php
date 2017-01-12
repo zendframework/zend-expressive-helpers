@@ -123,7 +123,7 @@ class UrlHelper
         $routeName = null,
         array $routeParams = [],
         array $queryParams = [],
-        $fragmentIdentifier = '',
+        $fragmentIdentifier = null,
         array $options = []
     ) {
         return $this($routeName, $routeParams, $queryParams, $fragmentIdentifier, $options);

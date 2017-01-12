@@ -310,4 +310,19 @@ class UrlHelperTest extends TestCase
         $helper = $this->createHelper();
         $helper('foo', [], [], $fragmentIdentifier);
     }
+
+    /**
+     * Test written when discovering that generate() uses '' as the default fragment,
+     * which __invoke() considers invalid.
+     */
+    public function testCallingGenerateWithoutFragmentArgumentPassesNullValueForFragment()
+    {
+        $this->router->generateUri('foo', [], [])->willReturn('/foo');
+        $helper = $this->createHelper();
+
+        $this->assertEquals(
+            '/foo',
+            $helper->generate('foo')
+        );
+    }
 }
