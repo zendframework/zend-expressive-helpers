@@ -24,6 +24,8 @@ class JsonStrategy implements StrategyInterface
 
     /**
      * {@inheritDoc}
+     *
+     * @throws MalformedRequestBodyException
      */
     public function parse(ServerRequestInterface $request)
     {
@@ -31,7 +33,10 @@ class JsonStrategy implements StrategyInterface
         $parsedBody = json_decode($rawBody, true);
 
         if (! empty($rawBody) && json_last_error() !== JSON_ERROR_NONE) {
-            throw new MalformedRequestBodyException('Error when parsing JSON request body: ' . json_last_error_msg());
+            throw new MalformedRequestBodyException(sprintf(
+                'Error when parsing JSON request body: %s',
+                json_last_error_msg()
+            ));
         }
 
         return $request
