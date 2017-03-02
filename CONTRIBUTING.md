@@ -39,8 +39,8 @@ To run tests:
 - Clone the repository:
 
   ```console
-  $ git clone git://github.com/zendframework/zend-expressive-platesrenderer.git
-  $ cd zend-expressive-platesrenderer
+  $ git clone git://github.com/zendframework/zend-expressive-helpers.git
+  $ cd zend-expressive-helpers
   ```
 
 - Install dependencies via composer:

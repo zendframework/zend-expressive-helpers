@@ -22,6 +22,7 @@ can recommend the following implementations:
 - [pimple-interop](https://github.com/moufmouf/pimple-interop):
   `composer require mouf/pimple-interop`
 - [Aura.Di](https://github.com/auraphp/Aura.Di)
+  `composer require aura/di`
 
 ## Helpers Provided
 
