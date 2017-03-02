@@ -8,7 +8,8 @@
 namespace ZendTest\Expressive\Helper;
 
 use Interop\Container\ContainerInterface;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
+use Prophecy\Prophecy\ObjectProphecy;
 use Zend\Expressive\Helper\Exception\MissingRouterException;
 use Zend\Expressive\Helper\UrlHelper;
 use Zend\Expressive\Helper\UrlHelperFactory;
@@ -16,6 +17,21 @@ use Zend\Expressive\Router\RouterInterface;
 
 class UrlHelperFactoryTest extends TestCase
 {
+    /**
+     * @var RouterInterface|ObjectProphecy
+     */
+    private $router;
+
+    /**
+     * @var ContainerInterface|ObjectProphecy
+     */
+    private $container;
+
+    /**
+     * @var UrlHelperFactory
+     */
+    private $factory;
+
     public function setUp()
     {
         $this->router = $this->prophesize(RouterInterface::class);
@@ -41,7 +57,7 @@ class UrlHelperFactoryTest extends TestCase
 
     public function testFactoryRaisesExceptionWhenRouterIsNotPresentInContainer()
     {
-        $this->setExpectedException(MissingRouterException::class);
+        $this->expectException(MissingRouterException::class);
         $this->factory->__invoke($this->container->reveal());
     }
 }

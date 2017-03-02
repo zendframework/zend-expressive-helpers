@@ -11,6 +11,13 @@ use Interop\Container\ContainerInterface;
 
 class ServerUrlMiddlewareFactory
 {
+    /**
+     * Create a ServerUrlMiddleware instance.
+     *
+     * @param ContainerInterface $container
+     * @return ServerUrlMiddleware
+     * @throws Exception\MissingHelperException
+     */
     public function __invoke(ContainerInterface $container)
     {
         if (! $container->has(ServerUrlHelper::class)) {
@@ -20,6 +27,7 @@ class ServerUrlMiddlewareFactory
                 ServerUrlHelper::class
             ));
         }
+
         return new ServerUrlMiddleware($container->get(ServerUrlHelper::class));
     }
 }

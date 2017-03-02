@@ -1,13 +1,13 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-expressive-helpers for the canonical source repository
- * @copyright Copyright (c) 2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   https://github.com/zendframework/zend-expressive-helpers/blob/master/LICENSE.md New BSD License
  */
 
 namespace ZendTest\Expressive\Helper\BodyParams;
 
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
@@ -21,12 +21,12 @@ class BodyParamsMiddlewareTest extends TestCase
     /**
      * @var Stream
      */
-    protected $body;
+    private $body;
 
-     /**
+    /**
      * @var BodyParamsMiddleware
      */
-    protected $bodyParams;
+    private $bodyParams;
 
     public function setUp()
     {
@@ -50,6 +50,8 @@ class BodyParamsMiddlewareTest extends TestCase
 
     /**
      * @dataProvider jsonProvider
+     *
+     * @param string $contentType
      */
     public function testParsesRawBodyAndPreservesRawBodyInRequestAttribute($contentType)
     {
@@ -85,6 +87,9 @@ class BodyParamsMiddlewareTest extends TestCase
 
     /**
      * @dataProvider notApplicableProvider
+     *
+     * @param string $method
+     * @param string $contentType
      */
     public function testRequestIsUnchangedWhenBodyParamsMiddlewareIsNotApplicable($method, $contentType)
     {
@@ -165,18 +170,16 @@ class BodyParamsMiddlewareTest extends TestCase
     {
         $expectedException = new MalformedRequestBodyException('malformed request body');
 
-        $this->setExpectedException(
-            get_class($expectedException),
-            $expectedException->getMessage(),
-            $expectedException->getCode()
-        );
-
         $middleware = $this->bodyParams;
         $serverRequest = new ServerRequest([], [], '', 'PUT', $this->body, ['Content-type' => 'foo/bar']);
         $strategy = $this->prophesize(StrategyInterface::class);
         $strategy->match('foo/bar')->willReturn(true);
         $strategy->parse($serverRequest)->willThrow($expectedException);
         $middleware->addStrategy($strategy->reveal());
+
+        $this->expectException(get_class($expectedException));
+        $this->expectExceptionMessage($expectedException->getMessage());
+        $this->expectExceptionCode($expectedException->getCode());
 
         $middleware($serverRequest, new Response(),
             function ($request, $response) use (&$triggered) {
