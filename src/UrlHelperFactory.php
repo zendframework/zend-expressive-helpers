@@ -8,7 +8,6 @@
 namespace Zend\Expressive\Helper;
 
 use Interop\Container\ContainerInterface;
-use Zend\Expressive\Application;
 use Zend\Expressive\Router\RouterInterface;
 
 class UrlHelperFactory
@@ -18,6 +17,7 @@ class UrlHelperFactory
      *
      * @param ContainerInterface $container
      * @return UrlHelper
+     * @throws Exception\MissingRouterException
      */
     public function __invoke(ContainerInterface $container)
     {

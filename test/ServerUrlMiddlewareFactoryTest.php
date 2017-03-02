@@ -8,7 +8,7 @@
 namespace ZendTest\Expressive\Helper;
 
 use Interop\Container\ContainerInterface;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 use Zend\Expressive\Helper\Exception\MissingHelperException;
 use Zend\Expressive\Helper\ServerUrlHelper;
 use Zend\Expressive\Helper\ServerUrlMiddleware;
@@ -35,7 +35,7 @@ class ServerUrlMiddlewareFactoryTest extends TestCase
 
         $factory = new ServerUrlMiddlewareFactory();
 
-        $this->setExpectedException(MissingHelperException::class);
+        $this->expectException(MissingHelperException::class);
         $factory($container->reveal());
     }
 }
