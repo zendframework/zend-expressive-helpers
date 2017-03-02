@@ -7,16 +7,19 @@
 
 namespace ZendTest\Expressive\Helper;
 
-use PHPUnit_Framework_TestCase as TestCase;
+use Mockery;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\UriInterface;
 use Zend\Diactoros\Uri;
 use Zend\Expressive\Helper\ServerUrlHelper;
 
 class ServerUrlHelperTest extends TestCase
 {
+    use MockeryPHPUnitIntegration;
+
     public function plainPaths()
     {
-        // @codingStandardsIgnoreStart
         return [
             'null'          => [null,       '/'],
             'empty'         => ['',         '/'],
@@ -24,11 +27,13 @@ class ServerUrlHelperTest extends TestCase
             'relative-path' => ['foo/bar',  '/foo/bar'],
             'abs-path'      => ['/foo/bar', '/foo/bar'],
         ];
-        // @codingStandardsIgnoreEnd
     }
 
     /**
      * @dataProvider plainPaths
+     *
+     * @param null|string $path
+     * @param string $expected
      */
     public function testInvocationReturnsPathOnlyIfNoUriInjected($path, $expected)
     {
@@ -39,7 +44,6 @@ class ServerUrlHelperTest extends TestCase
     public function plainPathsForUseWithUri()
     {
         $uri = new Uri('https://example.com/resource');
-        // @codingStandardsIgnoreStart
         return [
             'null'          => [$uri, null,       'https://example.com/resource'],
             'empty'         => [$uri, '',         'https://example.com/resource'],
@@ -47,11 +51,14 @@ class ServerUrlHelperTest extends TestCase
             'relative-path' => [$uri, 'foo/bar',  'https://example.com/resource/foo/bar'],
             'abs-path'      => [$uri, '/foo/bar', 'https://example.com/foo/bar'],
         ];
-        // @codingStandardsIgnoreEnd
     }
 
     /**
      * @dataProvider plainPathsForUseWithUri
+     *
+     * @param UriInterface $uri
+     * @param null|string $path
+     * @param string $expected
      */
     public function testInvocationReturnsUriComposingPathWhenUriInjected(UriInterface $uri, $path, $expected)
     {
@@ -63,7 +70,6 @@ class ServerUrlHelperTest extends TestCase
     public function uriWithQueryString()
     {
         $uri = new Uri('https://example.com/resource?bar=baz');
-        // @codingStandardsIgnoreStart
         return [
             'null'          => [$uri, null,       'https://example.com/resource'],
             'empty'         => [$uri, '',         'https://example.com/resource'],
@@ -71,11 +77,14 @@ class ServerUrlHelperTest extends TestCase
             'relative-path' => [$uri, 'foo/bar',  'https://example.com/resource/foo/bar'],
             'abs-path'      => [$uri, '/foo/bar', 'https://example.com/foo/bar'],
         ];
-        // @codingStandardsIgnoreEnd
     }
 
     /**
      * @dataProvider uriWithQueryString
+     *
+     * @param UriInterface $uri
+     * @param null|string $path
+     * @param string $expected
      */
     public function testStripsQueryStringFromInjectedUri(UriInterface $uri, $path, $expected)
     {
@@ -87,7 +96,6 @@ class ServerUrlHelperTest extends TestCase
     public function uriWithFragment()
     {
         $uri = new Uri('https://example.com/resource#bar');
-        // @codingStandardsIgnoreStart
         return [
             'null'          => [$uri, null,       'https://example.com/resource'],
             'empty'         => [$uri, '',         'https://example.com/resource'],
@@ -95,11 +103,14 @@ class ServerUrlHelperTest extends TestCase
             'relative-path' => [$uri, 'foo/bar',  'https://example.com/resource/foo/bar'],
             'abs-path'      => [$uri, '/foo/bar', 'https://example.com/foo/bar'],
         ];
-        // @codingStandardsIgnoreEnd
     }
 
     /**
      * @dataProvider uriWithFragment
+     *
+     * @param UriInterface $uri
+     * @param null|string $path
+     * @param string $expected
      */
     public function testStripsFragmentFromInjectedUri(UriInterface $uri, $path, $expected)
     {
@@ -111,18 +122,20 @@ class ServerUrlHelperTest extends TestCase
     public function pathsWithQueryString()
     {
         $uri = new Uri('https://example.com/resource');
-        // @codingStandardsIgnoreStart
         return [
             'empty-path'    => [$uri, '?foo=bar',         'https://example.com/resource?foo=bar'],
             'root-path'     => [$uri, '/?foo=bar',        'https://example.com/?foo=bar'],
             'relative-path' => [$uri, 'foo/bar?foo=bar',  'https://example.com/resource/foo/bar?foo=bar'],
             'abs-path'      => [$uri, '/foo/bar?foo=bar', 'https://example.com/foo/bar?foo=bar'],
         ];
-        // @codingStandardsIgnoreEnd
     }
 
     /**
      * @dataProvider pathsWithQueryString
+     *
+     * @param UriInterface $uri
+     * @param string $path
+     * @param string $expected
      */
     public function testUsesQueryStringFromProvidedPath(UriInterface $uri, $path, $expected)
     {
@@ -134,18 +147,20 @@ class ServerUrlHelperTest extends TestCase
     public function pathsWithFragment()
     {
         $uri = new Uri('https://example.com/resource');
-        // @codingStandardsIgnoreStart
         return [
             'empty-path'    => [$uri, '#bar',         'https://example.com/resource#bar'],
             'root-path'     => [$uri, '/#bar',        'https://example.com/#bar'],
             'relative-path' => [$uri, 'foo/bar#bar',  'https://example.com/resource/foo/bar#bar'],
             'abs-path'      => [$uri, '/foo/bar#bar', 'https://example.com/foo/bar#bar'],
         ];
-        // @codingStandardsIgnoreEnd
     }
 
     /**
      * @dataProvider pathsWithFragment
+     *
+     * @param UriInterface $uri
+     * @param string $path
+     * @param string $expected
      */
     public function testUsesFragmentFromProvidedPath(UriInterface $uri, $path, $expected)
     {
@@ -158,7 +173,7 @@ class ServerUrlHelperTest extends TestCase
     {
         $path = '/foo';
 
-        $helper = \Mockery::mock(ServerUrlHelper::class)->shouldDeferMissing();
+        $helper = Mockery::mock(ServerUrlHelper::class)->shouldDeferMissing();
         $helper->shouldReceive('__invoke')
             ->once()
             ->with($path)

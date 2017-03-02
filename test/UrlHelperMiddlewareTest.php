@@ -7,16 +7,22 @@
 
 namespace ZendTest\Expressive\Helper;
 
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Psr\Http\Message\ServerRequestInterface;
+use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Zend\Expressive\Helper\UrlHelper;
 use Zend\Expressive\Helper\UrlHelperMiddleware;
 use Zend\Expressive\Router\RouteResult;
 
 class UrlHelperMiddlewareTest extends TestCase
 {
+    /**
+     * @var UrlHelper|ObjectProphecy
+     */
+    private $helper;
+
     public function setUp()
     {
         $this->helper = $this->prophesize(UrlHelper::class);
