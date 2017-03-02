@@ -7,7 +7,12 @@
 
 namespace ZendTest\Expressive\Helper;
 
-use PHPUnit_Framework_TestCase as TestCase;
+use InvalidArgumentException;
+use Mockery;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use PHPUnit\Framework\TestCase;
+use Prophecy\Prophecy\ObjectProphecy;
+use stdClass;
 use Zend\Expressive\Helper\Exception\RuntimeException;
 use Zend\Expressive\Helper\UrlHelper;
 use Zend\Expressive\Router\Exception\RuntimeException as RouterException;
@@ -16,6 +21,13 @@ use Zend\Expressive\Router\RouterInterface;
 
 class UrlHelperTest extends TestCase
 {
+    use MockeryPHPUnitIntegration;
+
+    /**
+     * @var RouterInterface|ObjectProphecy
+     */
+    private $router;
+
     public function setUp()
     {
         $this->router = $this->prophesize(RouterInterface::class);
@@ -29,7 +41,9 @@ class UrlHelperTest extends TestCase
     public function testRaisesExceptionOnInvocationIfNoRouteProvidedAndNoResultPresent()
     {
         $helper = $this->createHelper();
-        $this->setExpectedException(RuntimeException::class, 'use matched result');
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('use matched result');
         $helper();
     }
 
@@ -39,7 +53,9 @@ class UrlHelperTest extends TestCase
         $result->isFailure()->willReturn(true);
         $helper = $this->createHelper();
         $helper->setRouteResult($result->reveal());
-        $this->setExpectedException(RuntimeException::class, 'routing failed');
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('routing failed');
         $helper();
     }
 
@@ -47,7 +63,8 @@ class UrlHelperTest extends TestCase
     {
         $this->router->generateUri('foo', [], [])->willThrow(RouterException::class);
         $helper = $this->createHelper();
-        $this->setExpectedException(RouterException::class);
+
+        $this->expectException(RouterException::class);
         $helper('foo');
     }
 
@@ -206,7 +223,7 @@ class UrlHelperTest extends TestCase
         $fragmentIdentifier = 'foobar';
         $options = ['router' => ['foobar' => 'baz'], 'reuse_result_params' => false];
 
-        $helper = \Mockery::mock(UrlHelper::class)->shouldDeferMissing();
+        $helper = Mockery::mock(UrlHelper::class)->shouldDeferMissing();
         $helper->shouldReceive('__invoke')
             ->once()
             ->with($routeName, $routeParams, $queryParams, $fragmentIdentifier, $options)
@@ -221,20 +238,20 @@ class UrlHelperTest extends TestCase
     public function invalidBasePathProvider()
     {
         return [
-            [new \stdClass('foo')],
+            [new stdClass('foo')],
             [['bar']],
         ];
     }
 
     /**
      * @dataProvider invalidBasePathProvider
+     *
+     * @param mixed $basePath
      */
     public function testThrowsExceptionWhenSettingInvalidBasePaths($basePath)
     {
-        $this->setExpectedExceptionRegExp(
-            \InvalidArgumentException::class,
-            '/^Base path must be a string; received [a-zA-Z]+/'
-        );
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageRegExp('/^Base path must be a string; received [a-zA-Z]+/');
 
         $helper = $this->createHelper();
         $helper->setBasePath($basePath);
@@ -264,18 +281,20 @@ class UrlHelperTest extends TestCase
 
     public function queryParametersAndFragmentProvider()
     {
-        // @codingStandardsIgnoreStart
         return [
             'none'           => [[], null, ''],
             'query'          => [['qux' => 'quux'], null, '?qux=quux'],
             'fragment'       => [[], 'corge', '#corge'],
             'query+fragment' => [['qux' => 'quux'], 'cor-ge', '?qux=quux#cor-ge'],
         ];
-        // @codingStandardsIgnoreEnd
     }
 
     /**
      * @dataProvider queryParametersAndFragmentProvider
+     *
+     * @param array $queryParams
+     * @param null|string $fragmentIdentifier
+     * @param string $expected
      */
     public function testQueryParametersAndFragment(array $queryParams, $fragmentIdentifier, $expected)
     {
@@ -298,14 +317,14 @@ class UrlHelperTest extends TestCase
 
     /**
      * @dataProvider invalidFragmentProvider
+     *
+     * @param string $fragmentIdentifier
      */
     public function testRejectsInvalidFragmentIdentifier($fragmentIdentifier)
     {
-        $this->setExpectedException(
-            \InvalidArgumentException::class,
-            'Fragment identifier must conform to RFC 3986',
-            400
-        );
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Fragment identifier must conform to RFC 3986');
+        $this->expectExceptionCode(400);
 
         $helper = $this->createHelper();
         $helper('foo', [], [], $fragmentIdentifier);
@@ -320,9 +339,6 @@ class UrlHelperTest extends TestCase
         $this->router->generateUri('foo', [], [])->willReturn('/foo');
         $helper = $this->createHelper();
 
-        $this->assertEquals(
-            '/foo',
-            $helper->generate('foo')
-        );
+        $this->assertEquals('/foo', $helper->generate('foo'));
     }
 }

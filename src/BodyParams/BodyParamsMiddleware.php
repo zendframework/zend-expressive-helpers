@@ -46,6 +46,7 @@ class BodyParamsMiddleware
      * Add a body parsing strategy to the middleware.
      *
      * @param StrategyInterface $strategy
+     * @return void
      */
     public function addStrategy(StrategyInterface $strategy)
     {
@@ -54,6 +55,8 @@ class BodyParamsMiddleware
 
     /**
      * Clear all strategies from the middleware.
+     *
+     * @return void
      */
     public function clearStrategies()
     {
@@ -66,7 +69,6 @@ class BodyParamsMiddleware
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
      * @param callable $next
-     *
      * @return ResponseInterface
      */
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, callable $next)

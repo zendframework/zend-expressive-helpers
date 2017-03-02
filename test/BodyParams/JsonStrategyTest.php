@@ -1,13 +1,13 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-expressive-helpers for the canonical source repository
- * @copyright Copyright (c) 2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   https://github.com/zendframework/zend-expressive-helpers/blob/master/LICENSE.md New BSD License
  */
 
 namespace ZendTest\Expressive\Helper\BodyParams;
 
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Zend\Expressive\Helper\BodyParams\JsonStrategy;
@@ -15,6 +15,11 @@ use Zend\Expressive\Helper\Exception\MalformedRequestBodyException;
 
 class JsonStrategyTest extends TestCase
 {
+    /**
+     * @var JsonStrategy
+     */
+    private $strategy;
+
     public function setUp()
     {
         $this->strategy = new JsonStrategy();
@@ -34,6 +39,8 @@ class JsonStrategyTest extends TestCase
 
     /**
      * @dataProvider jsonContentTypes
+     *
+     * @param string $contentType
      */
     public function testMatchesJsonTypes($contentType)
     {
@@ -52,6 +59,8 @@ class JsonStrategyTest extends TestCase
 
     /**
      * @dataProvider invalidContentTypes
+     *
+     * @param string $contentType
      */
     public function testDoesNotMatchNonJsonTypes($contentType)
     {
@@ -77,16 +86,15 @@ class JsonStrategyTest extends TestCase
 
     public function testThrowsExceptionOnMalformedJsonInRequestBody()
     {
-        $this->setExpectedException(
-            MalformedRequestBodyException::class,
-            'Error when parsing JSON request body: ',
-            400
-        );
         $body = '{foobar}';
         $stream = $this->prophesize(StreamInterface::class);
         $stream->__toString()->willReturn($body);
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getBody()->willReturn($stream->reveal());
+
+        $this->expectException(MalformedRequestBodyException::class);
+        $this->expectExceptionMessage('Error when parsing JSON request body: ');
+        $this->expectExceptionCode(400);
 
         $this->strategy->parse($request->reveal());
     }

@@ -8,7 +8,7 @@
 namespace ZendTest\Expressive\Helper;
 
 use Interop\Container\ContainerInterface;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 use Zend\Expressive\Helper\Exception\MissingHelperException;
 use Zend\Expressive\Helper\UrlHelper;
@@ -17,6 +17,11 @@ use Zend\Expressive\Helper\UrlHelperMiddlewareFactory;
 
 class UrlHelperMiddlewareFactoryTest extends TestCase
 {
+    /**
+     * @var ContainerInterface|ObjectProphecy
+     */
+    private $container;
+
     public function setUp()
     {
         $this->container = $this->prophesize(ContainerInterface::class);
@@ -43,12 +48,8 @@ class UrlHelperMiddlewareFactoryTest extends TestCase
     public function testFactoryRaisesExceptionWhenContainerDoesNotContainHelper()
     {
         $this->container->has(UrlHelper::class)->willReturn(false);
-        $this->injectContainer(
-            RouteResultSubjectInterface::class,
-            $this->prophesize(RouteResultSubjectInterface::class)
-        );
         $factory = new UrlHelperMiddlewareFactory();
-        $this->setExpectedException(MissingHelperException::class);
-        $middleware = $factory($this->container->reveal());
+        $this->expectException(MissingHelperException::class);
+        $factory($this->container->reveal());
     }
 }

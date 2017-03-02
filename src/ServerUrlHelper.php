@@ -68,6 +68,7 @@ class ServerUrlHelper
 
     /**
      * @param UriInterface $uri
+     * @return void
      */
     public function setUri(UriInterface $uri)
     {
@@ -100,7 +101,7 @@ class ServerUrlHelper
 
         // Path present; set on URI
         if (! empty($path)) {
-            $uri  = $uri->withPath($path);
+            $uri = $uri->withPath($path);
         }
 
         // Query present; set on URI

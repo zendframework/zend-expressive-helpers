@@ -8,7 +8,6 @@
 namespace Zend\Expressive\Helper;
 
 use InvalidArgumentException;
-use Zend\Expressive\Router\Exception\RuntimeException as RouterException;
 use Zend\Expressive\Router\RouteResult;
 use Zend\Expressive\Router\RouterInterface;
 
@@ -47,17 +46,17 @@ class UrlHelper
     /**
      * Generate a URL based on a given route.
      *
-     * @param string $routeName
-     * @param array  $routeParams
-     * @param array  $queryParams
-     * @param string $fragmentIdentifier
-     * @param array  $options       Can have the following keys:
-     *                              - router (array): contains options to be passed to the router
-     *                              - reuse_result_params (bool): indicates if the current RouteResult
-     *                              parameters will be used, defaults to true
-     *
+     * @param null|string $routeName
+     * @param array $routeParams
+     * @param array $queryParams
+     * @param null|string $fragmentIdentifier
+     * @param array $options Can have the following keys:
+     *                         - router (array): contains options to be passed to the router
+     *                         - reuse_result_params (bool): indicates if the current RouteResult
+     *                         parameters will be used, defaults to true
      * @return string
-     * @throws \Zend\Expressive\Helper\Exception\RuntimeException
+     * @throws Exception\RuntimeException
+     * @throws InvalidArgumentException
      */
     public function __invoke(
         $routeName = null,
@@ -103,7 +102,7 @@ class UrlHelper
         // Append the fragment identifier
         if ($fragmentIdentifier !== null) {
             if (! preg_match(self::FRAGMENT_IDENTIFIER_REGEX, $fragmentIdentifier)) {
-                throw new \InvalidArgumentException('Fragment identifier must conform to RFC 3986', 400);
+                throw new InvalidArgumentException('Fragment identifier must conform to RFC 3986', 400);
             }
 
             $path .= '#' . $fragmentIdentifier;
@@ -118,6 +117,13 @@ class UrlHelper
      * Proxies to __invoke().
      *
      * @see UrlHelper::__invoke()
+     *
+     * @param null|string $routeName
+     * @param array $routeParams
+     * @param array $queryParams
+     * @param null|string $fragmentIdentifier
+     * @param array $options
+     * @return string
      */
     public function generate(
         $routeName = null,
@@ -136,6 +142,7 @@ class UrlHelper
      * parameters if the URL being generated is for the route that was matched.
      *
      * @param RouteResult $result
+     * @return void
      */
     public function setRouteResult(RouteResult $result)
     {
@@ -144,13 +151,17 @@ class UrlHelper
 
     /**
      * Set the base path to prepend to a generated URI
+     *
+     * @param mixed $path
+     * @return void
+     * @throws InvalidArgumentException
      */
     public function setBasePath($path)
     {
         if (! is_string($path)) {
             throw new InvalidArgumentException(sprintf(
                 'Base path must be a string; received %s',
-                (is_object($path) ? get_class($path) : gettype($path))
+                is_object($path) ? get_class($path) : gettype($path)
             ));
         }
 
@@ -182,7 +193,7 @@ class UrlHelper
      * @param RouteResult $result
      * @param array $routerOptions
      * @return string
-     * @throws RenderingException if current result is a routing failure.
+     * @throws Exception\RuntimeException if current result is a routing failure.
      */
     private function generateUriFromResult(array $params, RouteResult $result, array $routerOptions)
     {
