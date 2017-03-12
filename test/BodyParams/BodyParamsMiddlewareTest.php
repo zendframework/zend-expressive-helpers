@@ -7,6 +7,7 @@
 
 namespace ZendTest\Expressive\Helper\BodyParams;
 
+use Interop\Http\ServerMiddleware\DelegateInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Diactoros\Response;
@@ -57,14 +58,15 @@ class BodyParamsMiddlewareTest extends TestCase
     {
         $serverRequest = new ServerRequest([], [], '', 'PUT', $this->body, ['Content-type' => $contentType]);
 
-        $this->bodyParams->__invoke(
+        $this->bodyParams->process(
             $serverRequest,
-            new Response(),
-            function ($request, $response) use (&$serverRequest) {
-                $serverRequest = $request;
+            $this->fakeDelegate(
+                function (ServerRequestInterface $request) use (&$serverRequest) {
+                    $serverRequest = $request;
 
-                return $response;
-            }
+                    return new Response();
+                }
+            )
         );
 
         $this->assertSame(
@@ -96,14 +98,15 @@ class BodyParamsMiddlewareTest extends TestCase
         $originalRequest = new ServerRequest([], [], '', $method, $this->body, ['Content-type' => $contentType]);
         $finalRequest = null;
 
-        $this->bodyParams->__invoke(
+        $this->bodyParams->process(
             $originalRequest,
-            new Response(),
-            function ($request, $response) use (&$finalRequest) {
-                $finalRequest = $request;
+            $this->fakeDelegate(
+                function (ServerRequestInterface $request) use (&$finalRequest) {
+                    $finalRequest = $request;
 
-                return $response;
-            }
+                    return new Response();
+                }
+            )
         );
 
         $this->assertSame($originalRequest, $finalRequest);
@@ -133,14 +136,16 @@ class BodyParamsMiddlewareTest extends TestCase
         $middleware->addStrategy($strategy->reveal());
 
         $triggered = false;
-        $middleware(
+        $middleware->process(
             $serverRequest,
-            new Response(),
-            function ($request, $response) use (&$triggered, $expectedReturn) {
-                $this->assertSame($expectedReturn, $request);
-                $triggered = true;
-                return $response;
-            }
+            $this->fakeDelegate(
+                function (ServerRequestInterface $request) use (&$triggered, $expectedReturn) {
+                    $this->assertSame($expectedReturn, $request);
+                    $triggered = true;
+
+                    return new Response();
+                }
+            )
         );
 
         $this->assertTrue($triggered, 'Next was not triggered');
@@ -153,14 +158,16 @@ class BodyParamsMiddlewareTest extends TestCase
         $serverRequest = new ServerRequest([], [], '', 'PUT', $this->body, ['Content-type' => 'foo/bar']);
 
         $triggered = false;
-        $middleware(
+        $middleware->process(
             $serverRequest,
-            new Response(),
-            function ($request, $response) use (&$triggered, $serverRequest) {
-                $this->assertSame($serverRequest, $request);
-                $triggered = true;
-                return $response;
-            }
+            $this->fakeDelegate(
+                function (ServerRequestInterface $request) use (&$triggered, $serverRequest) {
+                    $this->assertSame($serverRequest, $request);
+                    $triggered = true;
+
+                    return new Response();
+                }
+            )
         );
 
         $this->assertTrue($triggered, 'Next was not triggered');
@@ -181,13 +188,43 @@ class BodyParamsMiddlewareTest extends TestCase
         $this->expectExceptionMessage($expectedException->getMessage());
         $this->expectExceptionCode($expectedException->getCode());
 
-        $middleware($serverRequest, new Response(),
-            function ($request, $response) use (&$triggered) {
-                $triggered = true;
-                return $response;
-            }
+        $middleware->process(
+            $serverRequest,
+            $this->fakeDelegateNeverTriggered(
+                function (ServerRequestInterface $request) use (&$triggered) {
+                    $triggered = true;
+
+                    return new Response();
+                }
+            )
         );
 
         $this->assertFalse($triggered, 'Next should not have been triggered!');
+    }
+
+    private function fakeDelegate(callable $callback)
+    {
+        $delegate = $this->createMock(DelegateInterface::class);
+        $delegate->expects($this->once())
+            ->method('process')
+            ->willReturnCallback($callback)
+            ->with(
+                $this->isInstanceOf(ServerRequestInterface::class)
+            );
+
+        return $delegate;
+    }
+
+    private function fakeDelegateNeverTriggered(callable $callback)
+    {
+        $delegate = $this->createMock(DelegateInterface::class);
+        $delegate->expects($this->never())
+            ->method('process')
+            ->willReturnCallback($callback)
+            ->with(
+                $this->isInstanceOf(ServerRequestInterface::class)
+            );
+
+        return $delegate;
     }
 }

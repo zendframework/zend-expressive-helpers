@@ -66,37 +66,6 @@ class BodyParamsMiddleware implements MiddlewareInterface
     }
 
     /**
-     * Adds JSON decoded request body to the request, where appropriate.
-     *
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @param callable $next
-     * @return ResponseInterface
-     */
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, callable $next)
-    {
-        if (in_array($request->getMethod(), $this->nonBodyRequests)) {
-            return $next($request, $response);
-        }
-
-        $header = $request->getHeaderLine('Content-Type');
-        foreach ($this->strategies as $strategy) {
-            if (! $strategy->match($header)) {
-                continue;
-            }
-
-            // Matched! Parse and pass on to the next
-            return $next(
-                $strategy->parse($request),
-                $response
-            );
-        }
-
-        // No match; continue
-        return $next($request, $response);
-    }
-
-    /**
      * Process an incoming server request and return a response, optionally delegating
      * to the next middleware component to create the response.
      *
