@@ -7,7 +7,7 @@
 
 namespace Zend\Expressive\Helper;
 
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Zend\Expressive\Router\RouterInterface;
 
 class UrlHelperFactory

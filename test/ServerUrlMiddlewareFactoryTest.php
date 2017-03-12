@@ -7,8 +7,8 @@
 
 namespace ZendTest\Expressive\Helper;
 
-use Interop\Container\ContainerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use Zend\Expressive\Helper\Exception\MissingHelperException;
 use Zend\Expressive\Helper\ServerUrlHelper;
 use Zend\Expressive\Helper\ServerUrlMiddleware;
