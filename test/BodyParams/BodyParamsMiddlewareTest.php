@@ -125,22 +125,21 @@ class BodyParamsMiddlewareTest extends TestCase
         $middleware = $this->bodyParams;
         $serverRequest = new ServerRequest([], [], '', 'PUT', $this->body, ['Content-type' => 'foo/bar']);
         $expectedReturn = $this->prophesize(ServerRequestInterface::class)->reveal();
+        $expectedResponse = new Response();
         $strategy = $this->prophesize(StrategyInterface::class);
         $strategy->match('foo/bar')->willReturn(true);
         $strategy->parse($serverRequest)->willReturn($expectedReturn);
         $middleware->addStrategy($strategy->reveal());
 
-        $triggered = false;
-        $middleware->process(
+        $response = $middleware->process(
             $serverRequest,
-            $this->mockDelegate(function (ServerRequestInterface $request) use (&$triggered, $expectedReturn) {
+            $this->mockDelegate(function (ServerRequestInterface $request) use ($expectedReturn, $expectedResponse) {
                 $this->assertSame($expectedReturn, $request);
-                $triggered = true;
-                return new Response();
+                return $expectedResponse;
             })->reveal()
         );
 
-        $this->assertTrue($triggered, 'Next was not triggered');
+        $this->assertSame($expectedResponse, $response);
     }
 
     public function testCallsNextWithOriginalRequestWhenNoStrategiesMatch()
@@ -148,18 +147,17 @@ class BodyParamsMiddlewareTest extends TestCase
         $middleware = $this->bodyParams;
         $middleware->clearStrategies();
         $serverRequest = new ServerRequest([], [], '', 'PUT', $this->body, ['Content-type' => 'foo/bar']);
+        $expectedResponse = new Response();
 
-        $triggered = false;
-        $middleware->process(
+        $response = $middleware->process(
             $serverRequest,
-            $this->mockDelegate(function (ServerRequestInterface $request) use (&$triggered, $serverRequest) {
+            $this->mockDelegate(function (ServerRequestInterface $request) use ($serverRequest, $expectedResponse) {
                 $this->assertSame($serverRequest, $request);
-                $triggered = true;
-                return new Response();
+                return $expectedResponse;
             })->reveal()
         );
 
-        $this->assertTrue($triggered, 'Next was not triggered');
+        $this->assertSame($expectedResponse, $response);
     }
 
     public function testThrowsMalformedRequestBodyExceptionWhenRequestBodyIsNotValidJson()
