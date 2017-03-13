@@ -7,7 +7,9 @@
 
 namespace ZendTest\Expressive\Helper\BodyParams;
 
+use Interop\Http\ServerMiddleware\DelegateInterface;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
@@ -57,14 +59,12 @@ class BodyParamsMiddlewareTest extends TestCase
     {
         $serverRequest = new ServerRequest([], [], '', 'PUT', $this->body, ['Content-type' => $contentType]);
 
-        $this->bodyParams->__invoke(
+        $this->bodyParams->process(
             $serverRequest,
-            new Response(),
-            function ($request, $response) use (&$serverRequest) {
+            $this->mockDelegate(function (ServerRequestInterface $request) use (&$serverRequest) {
                 $serverRequest = $request;
-
-                return $response;
-            }
+                return new Response();
+            })->reveal()
         );
 
         $this->assertSame(
@@ -96,14 +96,12 @@ class BodyParamsMiddlewareTest extends TestCase
         $originalRequest = new ServerRequest([], [], '', $method, $this->body, ['Content-type' => $contentType]);
         $finalRequest = null;
 
-        $this->bodyParams->__invoke(
+        $this->bodyParams->process(
             $originalRequest,
-            new Response(),
-            function ($request, $response) use (&$finalRequest) {
+            $this->mockDelegate(function (ServerRequestInterface $request) use (&$finalRequest) {
                 $finalRequest = $request;
-
-                return $response;
-            }
+                return new Response();
+            })->reveal()
         );
 
         $this->assertSame($originalRequest, $finalRequest);
@@ -127,23 +125,21 @@ class BodyParamsMiddlewareTest extends TestCase
         $middleware = $this->bodyParams;
         $serverRequest = new ServerRequest([], [], '', 'PUT', $this->body, ['Content-type' => 'foo/bar']);
         $expectedReturn = $this->prophesize(ServerRequestInterface::class)->reveal();
+        $expectedResponse = new Response();
         $strategy = $this->prophesize(StrategyInterface::class);
         $strategy->match('foo/bar')->willReturn(true);
         $strategy->parse($serverRequest)->willReturn($expectedReturn);
         $middleware->addStrategy($strategy->reveal());
 
-        $triggered = false;
-        $middleware(
+        $response = $middleware->process(
             $serverRequest,
-            new Response(),
-            function ($request, $response) use (&$triggered, $expectedReturn) {
+            $this->mockDelegate(function (ServerRequestInterface $request) use ($expectedReturn, $expectedResponse) {
                 $this->assertSame($expectedReturn, $request);
-                $triggered = true;
-                return $response;
-            }
+                return $expectedResponse;
+            })->reveal()
         );
 
-        $this->assertTrue($triggered, 'Next was not triggered');
+        $this->assertSame($expectedResponse, $response);
     }
 
     public function testCallsNextWithOriginalRequestWhenNoStrategiesMatch()
@@ -151,19 +147,17 @@ class BodyParamsMiddlewareTest extends TestCase
         $middleware = $this->bodyParams;
         $middleware->clearStrategies();
         $serverRequest = new ServerRequest([], [], '', 'PUT', $this->body, ['Content-type' => 'foo/bar']);
+        $expectedResponse = new Response();
 
-        $triggered = false;
-        $middleware(
+        $response = $middleware->process(
             $serverRequest,
-            new Response(),
-            function ($request, $response) use (&$triggered, $serverRequest) {
+            $this->mockDelegate(function (ServerRequestInterface $request) use ($serverRequest, $expectedResponse) {
                 $this->assertSame($serverRequest, $request);
-                $triggered = true;
-                return $response;
-            }
+                return $expectedResponse;
+            })->reveal()
         );
 
-        $this->assertTrue($triggered, 'Next was not triggered');
+        $this->assertSame($expectedResponse, $response);
     }
 
     public function testThrowsMalformedRequestBodyExceptionWhenRequestBodyIsNotValidJson()
@@ -181,13 +175,34 @@ class BodyParamsMiddlewareTest extends TestCase
         $this->expectExceptionMessage($expectedException->getMessage());
         $this->expectExceptionCode($expectedException->getCode());
 
-        $middleware($serverRequest, new Response(),
-            function ($request, $response) use (&$triggered) {
-                $triggered = true;
-                return $response;
-            }
+        $middleware->process(
+            $serverRequest,
+            $this->mockDelegateToNeverTrigger()->reveal()
         );
+    }
 
-        $this->assertFalse($triggered, 'Next should not have been triggered!');
+    private function mockDelegate(callable $callback)
+    {
+        $delegate = $this->prophesize(DelegateInterface::class);
+
+        $delegate
+            ->process(Argument::type(ServerRequestInterface::class))
+            ->will(function ($args) use ($callback) {
+                $request = $args[0];
+                return $callback($request);
+            });
+
+        return $delegate;
+    }
+
+    private function mockDelegateToNeverTrigger()
+    {
+        $delegate = $this->prophesize(DelegateInterface::class);
+
+        $delegate
+            ->process(Argument::type(ServerRequestInterface::class))
+            ->shouldNotBeCalled();
+
+        return $delegate;
     }
 }

@@ -7,9 +7,11 @@
 
 namespace ZendTest\Expressive\Helper;
 
+use Interop\Http\ServerMiddleware\DelegateInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Expressive\Helper\UrlHelper;
@@ -39,15 +41,16 @@ class UrlHelperMiddlewareTest extends TestCase
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(RouteResult::class, false)->willReturn($routeResult);
         $this->helper->setRouteResult($routeResult)->shouldBeCalled();
-        $response = $this->prophesize(ResponseInterface::class);
-        $next = function ($req, $res) {
+
+        $delegate = $this->prophesize(DelegateInterface::class);
+        $delegate->process(Argument::type(RequestInterface::class))->will(function ($req) {
             return 'COMPLETE';
-        };
+        });
+
         $middleware = $this->createMiddleware();
-        $this->assertEquals('COMPLETE', $middleware(
+        $this->assertEquals('COMPLETE', $middleware->process(
             $request->reveal(),
-            $response->reveal(),
-            $next
+            $delegate->reveal()
         ));
     }
 
@@ -56,15 +59,16 @@ class UrlHelperMiddlewareTest extends TestCase
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(RouteResult::class, false)->willReturn(false);
         $this->helper->setRouteResult(Argument::any())->shouldNotBeCalled();
-        $response = $this->prophesize(ResponseInterface::class);
-        $next = function ($req, $res) {
+
+        $delegate = $this->prophesize(DelegateInterface::class);
+        $delegate->process(Argument::type(RequestInterface::class))->will(function ($req) {
             return 'COMPLETE';
-        };
+        });
+
         $middleware = $this->createMiddleware();
-        $this->assertEquals('COMPLETE', $middleware(
+        $this->assertEquals('COMPLETE', $middleware->process(
             $request->reveal(),
-            $response->reveal(),
-            $next
+            $delegate->reveal()
         ));
     }
 }

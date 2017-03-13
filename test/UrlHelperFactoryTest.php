@@ -7,9 +7,9 @@
 
 namespace ZendTest\Expressive\Helper;
 
-use Interop\Container\ContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
+use Psr\Container\ContainerInterface;
 use Zend\Expressive\Helper\Exception\MissingRouterException;
 use Zend\Expressive\Helper\UrlHelper;
 use Zend\Expressive\Helper\UrlHelperFactory;
