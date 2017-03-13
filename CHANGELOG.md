@@ -16,6 +16,13 @@ All notable changes to this project will be documented in this file, in reverse 
   as the typehints will now be different (`Psr\Container\ContainerInterface`
   versus `Interop\Container\ContainerInterface`).
 
+- [#40](https://github.com/zendframework/zend-expressive-helpers/pull/40)
+  switches all middleware from invokable, double-pass to instead implement
+  http-interop/http-middleware. This means that any extensions of middleware
+  contained in this package will need to be updated; it also means that the
+  middleware can now only be used in systems that support
+  http-interop/http-middleware.
+
 ### Deprecated
 
 - Nothing.
