@@ -7,10 +7,12 @@
 
 namespace Zend\Expressive\Helper\BodyParams;
 
+use Interop\Http\ServerMiddleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class BodyParamsMiddleware
+class BodyParamsMiddleware implements MiddlewareInterface
 {
     /**
      * @var StrategyInterface[]
@@ -64,17 +66,18 @@ class BodyParamsMiddleware
     }
 
     /**
-     * Adds JSON decoded request body to the request, where appropriate.
+     * Process an incoming server request and return a response, optionally delegating
+     * to the next middleware component to create the response.
      *
      * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @param callable $next
+     * @param DelegateInterface      $delegate
+     *
      * @return ResponseInterface
      */
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, callable $next)
+    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
     {
         if (in_array($request->getMethod(), $this->nonBodyRequests)) {
-            return $next($request, $response);
+            return $delegate->process($request);
         }
 
         $header = $request->getHeaderLine('Content-Type');
@@ -84,13 +87,10 @@ class BodyParamsMiddleware
             }
 
             // Matched! Parse and pass on to the next
-            return $next(
-                $strategy->parse($request),
-                $response
-            );
+            return $delegate->process($strategy->parse($request));
         }
 
         // No match; continue
-        return $next($request, $response);
+        return $delegate->process($request);
     }
 }
