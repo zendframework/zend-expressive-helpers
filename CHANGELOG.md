@@ -2,11 +2,19 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 3.1.0 - TBD
+## 4.0.0 - TBD
 
 ### Added
 
 - Nothing.
+
+### Changed
+
+- [#39](https://github.com/zendframework/zend-expressive-helpers/pull/39)
+  switches from container-interop to psr-container for its `ContainerInterface`
+  usage. This is a breaking change for anybody extending any of the factories,
+  as the typehints will now be different (`Psr\Container\ContainerInterface`
+  versus `Interop\Container\ContainerInterface`).
 
 ### Deprecated
 

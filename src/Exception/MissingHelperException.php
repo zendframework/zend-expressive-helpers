@@ -8,10 +8,10 @@
 namespace Zend\Expressive\Helper\Exception;
 
 use DomainException;
-use Interop\Container\Exception\ContainerException;
+use Psr\Container\ContainerExceptionInterface;
 
 class MissingHelperException extends DomainException implements
-    ContainerException,
+    ContainerExceptionInterface,
     ExceptionInterface
 {
 }
