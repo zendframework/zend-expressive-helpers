@@ -9,6 +9,7 @@ namespace ZendTest\Expressive\Helper\BodyParams;
 
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
@@ -60,13 +61,10 @@ class BodyParamsMiddlewareTest extends TestCase
 
         $this->bodyParams->process(
             $serverRequest,
-            $this->fakeDelegate(
-                function (ServerRequestInterface $request) use (&$serverRequest) {
-                    $serverRequest = $request;
-
-                    return new Response();
-                }
-            )
+            $this->mockDelegate(function (ServerRequestInterface $request) use (&$serverRequest) {
+                $serverRequest = $request;
+                return new Response();
+            })->reveal()
         );
 
         $this->assertSame(
@@ -100,13 +98,10 @@ class BodyParamsMiddlewareTest extends TestCase
 
         $this->bodyParams->process(
             $originalRequest,
-            $this->fakeDelegate(
-                function (ServerRequestInterface $request) use (&$finalRequest) {
-                    $finalRequest = $request;
-
-                    return new Response();
-                }
-            )
+            $this->mockDelegate(function (ServerRequestInterface $request) use (&$finalRequest) {
+                $finalRequest = $request;
+                return new Response();
+            })->reveal()
         );
 
         $this->assertSame($originalRequest, $finalRequest);
@@ -138,14 +133,11 @@ class BodyParamsMiddlewareTest extends TestCase
         $triggered = false;
         $middleware->process(
             $serverRequest,
-            $this->fakeDelegate(
-                function (ServerRequestInterface $request) use (&$triggered, $expectedReturn) {
-                    $this->assertSame($expectedReturn, $request);
-                    $triggered = true;
-
-                    return new Response();
-                }
-            )
+            $this->mockDelegate(function (ServerRequestInterface $request) use (&$triggered, $expectedReturn) {
+                $this->assertSame($expectedReturn, $request);
+                $triggered = true;
+                return new Response();
+            })->reveal()
         );
 
         $this->assertTrue($triggered, 'Next was not triggered');
@@ -160,14 +152,11 @@ class BodyParamsMiddlewareTest extends TestCase
         $triggered = false;
         $middleware->process(
             $serverRequest,
-            $this->fakeDelegate(
-                function (ServerRequestInterface $request) use (&$triggered, $serverRequest) {
-                    $this->assertSame($serverRequest, $request);
-                    $triggered = true;
-
-                    return new Response();
-                }
-            )
+            $this->mockDelegate(function (ServerRequestInterface $request) use (&$triggered, $serverRequest) {
+                $this->assertSame($serverRequest, $request);
+                $triggered = true;
+                return new Response();
+            })->reveal()
         );
 
         $this->assertTrue($triggered, 'Next was not triggered');
@@ -190,40 +179,31 @@ class BodyParamsMiddlewareTest extends TestCase
 
         $middleware->process(
             $serverRequest,
-            $this->fakeDelegateNeverTriggered(
-                function (ServerRequestInterface $request) use (&$triggered) {
-                    $triggered = true;
-
-                    return new Response();
-                }
-            )
+            $this->mockDelegateToNeverTrigger()->reveal()
         );
-
-        $this->assertFalse($triggered, 'Next should not have been triggered!');
     }
 
-    private function fakeDelegate(callable $callback)
+    private function mockDelegate(callable $callback)
     {
-        $delegate = $this->createMock(DelegateInterface::class);
-        $delegate->expects($this->once())
-            ->method('process')
-            ->willReturnCallback($callback)
-            ->with(
-                $this->isInstanceOf(ServerRequestInterface::class)
-            );
+        $delegate = $this->prophesize(DelegateInterface::class);
+
+        $delegate
+            ->process(Argument::type(ServerRequestInterface::class))
+            ->will(function ($args) use ($callback) {
+                $request = $args[0];
+                return $callback($request);
+            });
 
         return $delegate;
     }
 
-    private function fakeDelegateNeverTriggered(callable $callback)
+    private function mockDelegateToNeverTrigger()
     {
-        $delegate = $this->createMock(DelegateInterface::class);
-        $delegate->expects($this->never())
-            ->method('process')
-            ->willReturnCallback($callback)
-            ->with(
-                $this->isInstanceOf(ServerRequestInterface::class)
-            );
+        $delegate = $this->prophesize(DelegateInterface::class);
+
+        $delegate
+            ->process(Argument::type(ServerRequestInterface::class))
+            ->shouldNotBeCalled();
 
         return $delegate;
     }
