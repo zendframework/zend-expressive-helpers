@@ -7,10 +7,12 @@
 
 namespace Zend\Expressive\Helper;
 
+use Interop\Http\ServerMiddleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class ServerUrlMiddleware
+class ServerUrlMiddleware implements MiddlewareInterface
 {
     /**
      * @var ServerUrlHelper
@@ -32,13 +34,14 @@ class ServerUrlMiddleware
      * the next middleware.
      *
      * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @param callable $next
+     * @param DelegateInterface      $delegate
+     *
      * @return ResponseInterface
      */
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, callable $next)
+    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
     {
         $this->helper->setUri($request->getUri());
-        return $next($request, $response);
+
+        return $delegate->process($request);
     }
 }
