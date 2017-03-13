@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 4.0.0 - TBD
+## 4.0.0 - 2017-03-13
 
 ### Added
 
@@ -22,24 +22,6 @@ All notable changes to this project will be documented in this file, in reverse 
   contained in this package will need to be updated; it also means that the
   middleware can now only be used in systems that support
   http-interop/http-middleware.
-
-### Deprecated
-
-- Nothing.
-
-### Removed
-
-- Nothing.
-
-### Fixed
-
-- Nothing.
-
-## 3.0.2 - TBD
-
-### Added
-
-- Nothing.
 
 ### Deprecated
 
