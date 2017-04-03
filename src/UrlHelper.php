@@ -82,11 +82,12 @@ class UrlHelper
 
         if ($routeName === null) {
             $path = $basePath . $this->generateUriFromResult($routeParams, $result, $routerOptions);
-            
+
             // Append query parameters if there are any
             if (count($queryParams) > 0) {
                 $path .= '?' . http_build_query($queryParams);
             }
+
             return $path;
         }
 
