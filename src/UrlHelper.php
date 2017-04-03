@@ -81,7 +81,13 @@ class UrlHelper
         $routerOptions = array_key_exists('router', $options) ? $options['router'] : [];
 
         if ($routeName === null) {
-            return $basePath . $this->generateUriFromResult($routeParams, $result, $routerOptions) . (count($queryParams) > 0 ? '?' . http_build_query($queryParams) : '');
+            $path = $basePath . $this->generateUriFromResult($routeParams, $result, $routerOptions);
+            
+            // Append query parameters if there are any
+            if (count($queryParams) > 0) {
+                $path .= '?' . http_build_query($queryParams);
+            }
+            return $path;
         }
 
         $reuseResultParams = ! isset($options['reuse_result_params']) || (bool) $options['reuse_result_params'];
