@@ -341,4 +341,36 @@ class UrlHelperTest extends TestCase
 
         $this->assertEquals('/foo', $helper->generate('foo'));
     }
+
+    /**
+     * @group 42
+     */
+    public function testAppendsQueryStringAndFragmentWhenPresentAndRouteNameIsNotProvided()
+    {
+        $result = $this->prophesize(RouteResult::class);
+        $result->isFailure()->willReturn(false);
+        $result->getMatchedRouteName()->willReturn('matched-route');
+        $result->getMatchedParams()->willReturn(['foo' => 'bar']);
+
+        $this->router
+            ->generateUri(
+                'matched-route',
+                ['foo' => 'baz'],
+                []
+            )
+            ->willReturn('scheme://host/path');
+
+        $helper = $this->createHelper();
+        $helper->setRouteResult($result->reveal());
+
+        $this->assertEquals(
+            'scheme://host/path?query=params&are=present#fragment/exists',
+            $helper(
+                null,
+                ['foo' => 'baz'],
+                ['query' => 'params', 'are' => 'present'],
+                'fragment/exists'
+            )
+        );
+    }
 }
