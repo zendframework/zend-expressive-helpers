@@ -20,11 +20,17 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - Nothing.
 
-## 4.0.1 - TBD
+## 4.0.1 - 2017-09-11
 
 ### Added
 
 - Nothing.
+
+### Changed
+
+- We no longer test against HHVM. Tests were running against that platform prior
+  to this release, but we are no longer testing against it as the PHP versions
+  we support have features that HHVM does not support at this time.
 
 ### Deprecated
 
@@ -36,7 +42,10 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
-- Nothing.
+- [#42](https://github.com/zendframework/zend-expressive-helpers/pull/42) fixes
+  how the `UrlHelper` generates a URI when using the currently matched route.
+  Previously, doing so would not append either provided query string arguments
+  or fragment identifiers; it now does.
 
 ## 4.0.0 - 2017-03-13
 

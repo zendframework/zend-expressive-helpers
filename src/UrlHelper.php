@@ -81,7 +81,10 @@ class UrlHelper
         $routerOptions = array_key_exists('router', $options) ? $options['router'] : [];
 
         if ($routeName === null) {
-            return $basePath . $this->generateUriFromResult($routeParams, $result, $routerOptions);
+            $path = $basePath . $this->generateUriFromResult($routeParams, $result, $routerOptions);
+            $path = $this->appendQueryStringArguments($path, $queryParams);
+            $path = $this->appendFragment($path, $fragmentIdentifier);
+            return $path;
         }
 
         $reuseResultParams = ! isset($options['reuse_result_params']) || (bool) $options['reuse_result_params'];
@@ -94,19 +97,9 @@ class UrlHelper
         // Generate the route
         $path = $basePath . $this->router->generateUri($routeName, $routeParams, $routerOptions);
 
-        // Append query parameters if there are any
-        if (count($queryParams) > 0) {
-            $path .= '?' . http_build_query($queryParams);
-        }
-
-        // Append the fragment identifier
-        if ($fragmentIdentifier !== null) {
-            if (! preg_match(self::FRAGMENT_IDENTIFIER_REGEX, $fragmentIdentifier)) {
-                throw new InvalidArgumentException('Fragment identifier must conform to RFC 3986', 400);
-            }
-
-            $path .= '#' . $fragmentIdentifier;
-        }
+        // Append query string arguments and fragment, if present
+        $path = $this->appendQueryStringArguments($path, $queryParams);
+        $path = $this->appendFragment($path, $fragmentIdentifier);
 
         return $path;
     }
@@ -236,5 +229,39 @@ class UrlHelper
         }
 
         return array_merge($result->getMatchedParams(), $params);
+    }
+
+    /**
+     * Append query string arguments to a URI string, if any are present.
+     *
+     * @param string $uriString
+     * @param array $queryParams
+     * @return string
+     */
+    private function appendQueryStringArguments($uriString, array $queryParams)
+    {
+        if (count($queryParams) > 0) {
+            return sprintf('%s?%s', $uriString, http_build_query($queryParams));
+        }
+        return $uriString;
+    }
+
+    /**
+     * Append a fragment to a URI string, if present.
+     *
+     * @param string $uriString
+     * @param null|string $fragmentIdentifier
+     * @return string
+     */
+    private function appendFragment($uriString, $fragmentIdentifier)
+    {
+        if ($fragmentIdentifier !== null) {
+            if (! preg_match(self::FRAGMENT_IDENTIFIER_REGEX, $fragmentIdentifier)) {
+                throw new InvalidArgumentException('Fragment identifier must conform to RFC 3986', 400);
+            }
+
+            return sprintf('%s#%s', $uriString, $fragmentIdentifier);
+        }
+        return $uriString;
     }
 }
