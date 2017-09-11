@@ -41,6 +41,31 @@ class BodyParamsMiddlewareTest extends TestCase
         $this->body->rewind();
     }
 
+    private function mockDelegate(callable $callback)
+    {
+        $delegate = $this->prophesize(DelegateInterface::class);
+
+        $delegate
+            ->process(Argument::type(ServerRequestInterface::class))
+            ->will(function ($args) use ($callback) {
+                $request = $args[0];
+                return $callback($request);
+            });
+
+        return $delegate;
+    }
+
+    private function mockDelegateToNeverTrigger()
+    {
+        $delegate = $this->prophesize(DelegateInterface::class);
+
+        $delegate
+            ->process(Argument::type(ServerRequestInterface::class))
+            ->shouldNotBeCalled();
+
+        return $delegate;
+    }
+
     public function jsonProvider()
     {
         return [
@@ -181,28 +206,65 @@ class BodyParamsMiddlewareTest extends TestCase
         );
     }
 
-    private function mockDelegate(callable $callback)
+    public function jsonBodyRequests()
     {
-        $delegate = $this->prophesize(DelegateInterface::class);
-
-        $delegate
-            ->process(Argument::type(ServerRequestInterface::class))
-            ->will(function ($args) use ($callback) {
-                $request = $args[0];
-                return $callback($request);
-            });
-
-        return $delegate;
+        return [
+            'POST'   => ['POST'],
+            'PUT'    => ['PUT'],
+            'PATCH'  => ['PATCH'],
+            'DELETE' => ['DELETE'],
+        ];
     }
 
-    private function mockDelegateToNeverTrigger()
+    /**
+     * @dataProvider jsonBodyRequests
+     * @param string $method
+     */
+    public function testParsesJsonBodyWhenExpected($method)
     {
-        $delegate = $this->prophesize(DelegateInterface::class);
+        $stream = fopen('php://memory', 'wb+');
+        fwrite($stream, json_encode(['foo' => 'bar']));
+        $body = new Stream($stream);
 
-        $delegate
-            ->process(Argument::type(ServerRequestInterface::class))
-            ->shouldNotBeCalled();
+        $serverRequest = new ServerRequest(
+            [],
+            [],
+            '',
+            $method,
+            $body,
+            ['Content-type' => 'application/json;charset=utf-8']
+        );
 
-        return $delegate;
+        $delegateTriggered = false;
+
+        $result = $this->bodyParams->process(
+            $serverRequest,
+            $this->mockDelegate(function (ServerRequestInterface $request) use ($serverRequest, &$delegateTriggered) {
+                $delegateTriggered = true;
+
+                $this->assertNotSame(
+                    $request,
+                    $serverRequest,
+                    'Request passed to delegate is the same as the one passed to BodyParamsMiddleware and should not be'
+                );
+
+                $this->assertSame(
+                    json_encode(['foo' => 'bar']),
+                    $request->getAttribute('rawBody'),
+                    'Request passed to delegate does not contain expected rawBody contents'
+                );
+
+                $this->assertSame(
+                    ['foo' => 'bar'],
+                    $request->getParsedBody(),
+                    'Request passed to delegate does not contain expected parsed body'
+                );
+
+                return new Response();
+            })->reveal()
+        );
+
+        $this->assertInstanceOf(Response::class, $result);
+        $this->assertTrue($delegateTriggered);
     }
 }
