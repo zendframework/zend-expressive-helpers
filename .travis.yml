@@ -5,8 +5,6 @@ language: php
 cache:
   directories:
     - $HOME/.composer/cache
-    - $HOME/.local
-    - vendor
 
 env:
   global:
@@ -45,17 +43,17 @@ matrix:
     - php: 7.1
       env:
         - DEPS=latest
-    - php: hhvm
+    - php: 7.2
       env:
         - DEPS=lowest
-    - php: hhvm
+    - php: 7.2
       env:
         - DEPS=locked
-    - php: hhvm
+    - php: 7.2
       env:
         - DEPS=latest
   allow_failures:
-    - php: hhvm
+    - php: 7.2
 
 before_install:
   - if [[ $TEST_COVERAGE != 'true' ]]; then phpenv config-rm xdebug.ini || return 0 ; fi
@@ -67,7 +65,7 @@ install:
   - if [[ $DEPS == 'latest' ]]; then travis_retry composer update $COMPOSER_ARGS ; fi
   - if [[ $DEPS == 'lowest' ]]; then travis_retry composer update --prefer-lowest --prefer-stable $COMPOSER_ARGS ; fi
   - if [[ $TEST_COVERAGE == 'true' ]]; then travis_retry composer require --dev $COMPOSER_ARGS $COVERAGE_DEPS ; fi
-  - composer show
+  - stty cols 120 && composer show
 
 script:
   - if [[ $TEST_COVERAGE == 'true' ]]; then composer test-coverage ; else composer test ; fi
@@ -79,13 +77,3 @@ after_script:
 
 notifications:
   email: false
-  irc:
-    channels:
-      - "irc.freenode.org#zftalk.dev"
-    on_success: change
-    on_failure: always
-  slack:
-    rooms:
-      - secure: "KeTYtqUtjrQbOFDXnBOgWuFXr488ni9wYDiK1vSR14j0M0++E/7pfuGyhAyybZpIwYrmL8O/KkGVraiIbfMO/lAJAitdGQ8nwFnbWCw10+Wj8aXhoHzhXujyyJHZM7QVBEKpYffRD4BorFBjAszIGy16ZGTajmu5bJrip3sf+hvgopraAdcn7qhZVqmjNqhSSNyguIxJMv+N54s4kA4pzG40qSlVQyewMDGN1BxuJ28PXcGg1xaOWyB3zLd0Aln8N8XRv7sUGa/tBVmv8SV0SY7DgAzUuZ3RaPGP9/FGQIads8RSfmNAyTu4v+h+POGtnJMovVzGHfgLR/wX+Kw75mNm+xYex1CCIyavi2JFs/lTk6r9eraVQqANKwMJgGaZmpjgZKVhNB2lzNIb1dTeV0dY68L1DPsB7OCb1JdM+91NxJV9uShwVTs72WsE9L2W2vZfSDg40IfH+Gg9hEJW+aCJSBwE/P7H/8T270zRtgC6w8SgaHWeHmrN+A4rKP2aN9tXkDIcyZlGk5E0k+xyDBXDg124gvMIU4OeOgk35KlcfCyTJApz3wMVXmjLrm8DzPyFfstxvTl3h8dnBbLmbo9QR/HcL6Xnnoq4W4QabaAvqMX+5i1ssw2vHp9KBN/OtdT24papPaXD02j9evSc76UKk78TXMZFWIKfbWc+gHE="
-    on_success: change
-    on_failure: always
