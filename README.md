@@ -541,7 +541,63 @@ Note: if you do this, **all** strategies will be removed! As such, we recommend
 doing this only immediately before registering any custom strategies you might
 be using.
 
+### Content-Length middleware
+
+In some cases, you may want to include an explicit `Content-Length` response
+header, without having to inject it manually. To facilitate this, we provide
+`Zend\Expressive\Helper\ContentLengthMiddleware`.
+
+This middleware delegates the request, and operates on the returned response. It
+will return a new response with the `Content-Length` header injected under the
+following conditions:
+
+- No `Content-Length` header is already present AND
+- the body size is non-null.
+
+To register it in your application, you will need to do two things: register the
+middleware with the container, and register the middleware in either your
+application pipeline, or within routed middleware.
+
+To add it to your container, add the following configuration:
+
+```php
+// In a `config/autoload/*.global.php` file, or a `ConfigProvider` class:
+
+use Zend\Expressive\Helper;
+
+return [
+    'dependencies' => [
+        'invokables' => [
+            Helper\ContentLengthMiddleware::class => Helper\ContentLengthMiddleware::class,
+        ],
+    ],
+];
+```
+
+To register it as pipeline middleware to execute on any request:
+
+```php
+// In `config/pipeline.php`:
+
+use Zend\Expressive\Helper;
+
+$app->pipe(Helper\ContentLengthMiddleware::class);
+```
+
+To register it within a routed middleware pipeline:
+
+```php
+// In `config/routes.php`:
+
+use Zend\Expressive\Helper;
+
+$app->get('/download/tarball', [
+    Helper\ContentLengthMiddleware::class,
+    Download\Tarball::class,
+], 'download-tar');
+```
+
 ## Documentation
 
 See the [zend-expressive](https://github.com/zendframework/zend-expressive/blob/master/doc/book)
-documentation tree, or browse online at http://zend-expressive.rtfd.org.
+documentation tree, or browse online at https://docs.zendframework.com/zend-expressive/features/helpers/intro/
