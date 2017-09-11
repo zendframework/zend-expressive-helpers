@@ -2,11 +2,14 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 4.1.0 - TBD
+## 4.1.0 - 2017-09-11
 
 ### Added
 
-- Nothing.
+- [#45](https://github.com/zendframework/zend-expressive-helpers/pull/45) adds
+  `Zend\Expressive\Helper\ContentLengthMiddleware`. This middleware will inject
+  a `Content-Length` response header if none already exists and the response
+  body size is non-null.
 
 ### Deprecated
 
