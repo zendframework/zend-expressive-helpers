@@ -7,16 +7,17 @@
 
 namespace ZendTest\Expressive\Helper;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Webimpress\HttpMiddlewareCompatibility\HandlerInterface as DelegateInterface;
 use Zend\Expressive\Helper\UrlHelper;
 use Zend\Expressive\Helper\UrlHelperMiddleware;
 use Zend\Expressive\Router\RouteResult;
+
+use const Webimpress\HttpMiddlewareCompatibility\HANDLER_METHOD;
 
 class UrlHelperMiddlewareTest extends TestCase
 {
@@ -43,7 +44,7 @@ class UrlHelperMiddlewareTest extends TestCase
         $this->helper->setRouteResult($routeResult)->shouldBeCalled();
 
         $delegate = $this->prophesize(DelegateInterface::class);
-        $delegate->process(Argument::type(RequestInterface::class))->will(function ($req) {
+        $delegate->{HANDLER_METHOD}(Argument::type(RequestInterface::class))->will(function ($req) {
             return 'COMPLETE';
         });
 
@@ -61,7 +62,7 @@ class UrlHelperMiddlewareTest extends TestCase
         $this->helper->setRouteResult(Argument::any())->shouldNotBeCalled();
 
         $delegate = $this->prophesize(DelegateInterface::class);
-        $delegate->process(Argument::type(RequestInterface::class))->will(function ($req) {
+        $delegate->{HANDLER_METHOD}(Argument::type(RequestInterface::class))->will(function ($req) {
             return 'COMPLETE';
         });
 

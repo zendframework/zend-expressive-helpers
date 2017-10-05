@@ -7,10 +7,12 @@
 
 namespace Zend\Expressive\Helper\BodyParams;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Webimpress\HttpMiddlewareCompatibility\HandlerInterface as DelegateInterface;
+use Webimpress\HttpMiddlewareCompatibility\MiddlewareInterface;
+
+use const Webimpress\HttpMiddlewareCompatibility\HANDLER_METHOD;
 
 class BodyParamsMiddleware implements MiddlewareInterface
 {
@@ -77,7 +79,7 @@ class BodyParamsMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, DelegateInterface $delegate)
     {
         if (in_array($request->getMethod(), $this->nonBodyRequests)) {
-            return $delegate->process($request);
+            return $delegate->{HANDLER_METHOD}($request);
         }
 
         $header = $request->getHeaderLine('Content-Type');
@@ -87,10 +89,10 @@ class BodyParamsMiddleware implements MiddlewareInterface
             }
 
             // Matched! Parse and pass on to the next
-            return $delegate->process($strategy->parse($request));
+            return $delegate->{HANDLER_METHOD}($strategy->parse($request));
         }
 
         // No match; continue
-        return $delegate->process($request);
+        return $delegate->{HANDLER_METHOD}($request);
     }
 }
