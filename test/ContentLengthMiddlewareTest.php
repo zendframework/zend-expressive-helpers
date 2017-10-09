@@ -7,12 +7,14 @@
 
 namespace ZendTest\Expressive\Helper;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
+use Webimpress\HttpMiddlewareCompatibility\HandlerInterface as DelegateInterface;
 use Zend\Expressive\Helper\ContentLengthMiddleware;
+
+use const Webimpress\HttpMiddlewareCompatibility\HANDLER_METHOD;
 
 class ContentLengthMiddlewareTest extends TestCase
 {
@@ -23,7 +25,7 @@ class ContentLengthMiddlewareTest extends TestCase
         $this->stream = $this->prophesize(StreamInterface::class);
 
         $delegate = $this->prophesize(DelegateInterface::class);
-        $delegate->process($request)->will([$response, 'reveal']);
+        $delegate->{HANDLER_METHOD}($request)->will([$response, 'reveal']);
         $this->delegate = $delegate->reveal();
 
         $this->middleware = new ContentLengthMiddleware();

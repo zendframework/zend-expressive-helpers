@@ -7,9 +7,11 @@
 
 namespace Zend\Expressive\Helper;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Webimpress\HttpMiddlewareCompatibility\HandlerInterface as DelegateInterface;
+use Webimpress\HttpMiddlewareCompatibility\MiddlewareInterface;
+
+use const Webimpress\HttpMiddlewareCompatibility\HANDLER_METHOD;
 
 /**
  * Middleware to inject a Content-Length response header.
@@ -25,7 +27,7 @@ class ContentLengthMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, DelegateInterface $delegate)
     {
-        $response = $delegate->process($request);
+        $response = $delegate->{HANDLER_METHOD}($request);
         if ($response->hasHeader('Content-Length')) {
             return $response;
         }
