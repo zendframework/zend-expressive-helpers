@@ -7,15 +7,17 @@
 
 namespace ZendTest\Expressive\Helper;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
+use Webimpress\HttpMiddlewareCompatibility\HandlerInterface as DelegateInterface;
 use Zend\Diactoros\Response;
 use Zend\Expressive\Helper\ServerUrlHelper;
 use Zend\Expressive\Helper\ServerUrlMiddleware;
+
+use const Webimpress\HttpMiddlewareCompatibility\HANDLER_METHOD;
 
 class ServerUrlMiddlewareTest extends TestCase
 {
@@ -31,7 +33,7 @@ class ServerUrlMiddlewareTest extends TestCase
         $invoked = false;
 
         $delegate = $this->prophesize(DelegateInterface::class);
-        $delegate->process(Argument::type(RequestInterface::class))->will(function ($req) use (&$invoked) {
+        $delegate->{HANDLER_METHOD}(Argument::type(RequestInterface::class))->will(function ($req) use (&$invoked) {
             $invoked = true;
 
             return new Response();
