@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 4.2.0 - TBD
+## 4.2.0 - 2017-10-09
 
 ### Added
 
@@ -16,28 +16,6 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - [#46](https://github.com/zendframework/zend-expressive-helpers/pull/46)
   updates the minimum supported zend-expressive-router version to 2.2.0.
-
-### Deprecated
-
-- Nothing.
-
-### Removed
-
-- Nothing.
-
-### Fixed
-
-- Nothing.
-
-## 4.1.1 - TBD
-
-### Added
-
-- Nothing.
-
-### Changed
-
-- Nothing.
 
 ### Deprecated
 
