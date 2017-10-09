@@ -7,16 +7,18 @@
 
 namespace ZendTest\Expressive\Helper\BodyParams;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Psr\Http\Message\ServerRequestInterface;
+use Webimpress\HttpMiddlewareCompatibility\HandlerInterface as DelegateInterface;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 use Zend\Diactoros\Stream;
 use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
 use Zend\Expressive\Helper\BodyParams\StrategyInterface;
 use Zend\Expressive\Helper\Exception\MalformedRequestBodyException;
+
+use const Webimpress\HttpMiddlewareCompatibility\HANDLER_METHOD;
 
 class BodyParamsMiddlewareTest extends TestCase
 {
@@ -46,7 +48,7 @@ class BodyParamsMiddlewareTest extends TestCase
         $delegate = $this->prophesize(DelegateInterface::class);
 
         $delegate
-            ->process(Argument::type(ServerRequestInterface::class))
+            ->{HANDLER_METHOD}(Argument::type(ServerRequestInterface::class))
             ->will(function ($args) use ($callback) {
                 $request = $args[0];
                 return $callback($request);
@@ -60,7 +62,7 @@ class BodyParamsMiddlewareTest extends TestCase
         $delegate = $this->prophesize(DelegateInterface::class);
 
         $delegate
-            ->process(Argument::type(ServerRequestInterface::class))
+            ->{HANDLER_METHOD}(Argument::type(ServerRequestInterface::class))
             ->shouldNotBeCalled();
 
         return $delegate;

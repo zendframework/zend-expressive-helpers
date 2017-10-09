@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 4.2.0 - TBD
+
+### Added
+
+- [#46](https://github.com/zendframework/zend-expressive-helpers/pull/46) adds
+  support for http-interop/http-middleware 0.5.0 via a polyfill provided by the
+  package webimpress/http-middleware-compatibility. Essentially, this means you
+  can drop this package into an application targeting either the 0.4.1 or 0.5.0
+  versions of http-middleware, and it will "just work".
+
+### Changed
+
+- [#46](https://github.com/zendframework/zend-expressive-helpers/pull/46)
+  updates the minimum supported zend-expressive-router version to 2.2.0.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 4.1.1 - TBD
 
 ### Added
