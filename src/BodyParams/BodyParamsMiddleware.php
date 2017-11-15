@@ -7,12 +7,10 @@
 
 namespace Zend\Expressive\Helper\BodyParams;
 
+use Interop\Http\Server\MiddlewareInterface;
+use Interop\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Webimpress\HttpMiddlewareCompatibility\HandlerInterface as DelegateInterface;
-use Webimpress\HttpMiddlewareCompatibility\MiddlewareInterface;
-
-use const Webimpress\HttpMiddlewareCompatibility\HANDLER_METHOD;
 
 class BodyParamsMiddleware implements MiddlewareInterface
 {
@@ -70,16 +68,11 @@ class BodyParamsMiddleware implements MiddlewareInterface
     /**
      * Process an incoming server request and return a response, optionally delegating
      * to the next middleware component to create the response.
-     *
-     * @param ServerRequestInterface $request
-     * @param DelegateInterface      $delegate
-     *
-     * @return ResponseInterface
      */
-    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
         if (in_array($request->getMethod(), $this->nonBodyRequests)) {
-            return $delegate->{HANDLER_METHOD}($request);
+            return $handler->handle($request);
         }
 
         $header = $request->getHeaderLine('Content-Type');
@@ -89,10 +82,10 @@ class BodyParamsMiddleware implements MiddlewareInterface
             }
 
             // Matched! Parse and pass on to the next
-            return $delegate->{HANDLER_METHOD}($strategy->parse($request));
+            return $handler->handle($strategy->parse($request));
         }
 
         // No match; continue
-        return $delegate->{HANDLER_METHOD}($request);
+        return $handler->handle($request);
     }
 }

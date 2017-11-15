@@ -7,12 +7,10 @@
 
 namespace Zend\Expressive\Helper;
 
+use Interop\Http\Server\MiddlewareInterface;
+use Interop\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Webimpress\HttpMiddlewareCompatibility\HandlerInterface as DelegateInterface;
-use Webimpress\HttpMiddlewareCompatibility\MiddlewareInterface;
-
-use const Webimpress\HttpMiddlewareCompatibility\HANDLER_METHOD;
 
 class ServerUrlMiddleware implements MiddlewareInterface
 {
@@ -31,19 +29,13 @@ class ServerUrlMiddleware implements MiddlewareInterface
 
     /**
      * Inject the ServerUrlHelper instance with the request URI.
-     *
      * Injects the ServerUrlHelper with the incoming request URI, and then invoke
      * the next middleware.
-     *
-     * @param ServerRequestInterface $request
-     * @param DelegateInterface      $delegate
-     *
-     * @return ResponseInterface
      */
-    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
         $this->helper->setUri($request->getUri());
 
-        return $delegate->{HANDLER_METHOD}($request);
+        return $handler->handle($request);
     }
 }
