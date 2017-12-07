@@ -7,13 +7,11 @@
 
 namespace Zend\Expressive\Helper;
 
+use Interop\Http\Server\MiddlewareInterface;
+use Interop\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Expressive\Router\RouteResult;
-use Webimpress\HttpMiddlewareCompatibility\HandlerInterface as DelegateInterface;
-use Webimpress\HttpMiddlewareCompatibility\MiddlewareInterface;
-
-use const Webimpress\HttpMiddlewareCompatibility\HANDLER_METHOD;
 
 /**
  * Pipeline middleware for injecting a UrlHelper with a RouteResult.
@@ -35,15 +33,9 @@ class UrlHelperMiddleware implements MiddlewareInterface
 
     /**
      * Inject the UrlHelper instance with a RouteResult, if present as a request attribute.
-     *
      * Injects the helper, and then dispatches the next middleware.
-     *
-     * @param ServerRequestInterface $request
-     * @param DelegateInterface      $delegate
-     *
-     * @return ResponseInterface
      */
-    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
         $result = $request->getAttribute(RouteResult::class, false);
 
@@ -51,6 +43,6 @@ class UrlHelperMiddleware implements MiddlewareInterface
             $this->helper->setRouteResult($result);
         }
 
-        return $delegate->{HANDLER_METHOD}($request);
+        return $handler->handle($request);
     }
 }
