@@ -19,9 +19,6 @@ class ServerUrlMiddleware implements MiddlewareInterface
      */
     private $helper;
 
-    /**
-     * @param ServerUrlHelper $helper
-     */
     public function __construct(ServerUrlHelper $helper)
     {
         $this->helper = $helper;
@@ -35,7 +32,6 @@ class ServerUrlMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
         $this->helper->setUri($request->getUri());
-
         return $handler->handle($request);
     }
 }

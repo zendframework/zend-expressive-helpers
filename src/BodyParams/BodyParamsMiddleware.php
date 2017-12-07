@@ -46,21 +46,16 @@ class BodyParamsMiddleware implements MiddlewareInterface
 
     /**
      * Add a body parsing strategy to the middleware.
-     *
-     * @param StrategyInterface $strategy
-     * @return void
      */
-    public function addStrategy(StrategyInterface $strategy)
+    public function addStrategy(StrategyInterface $strategy) : void
     {
         $this->strategies[] = $strategy;
     }
 
     /**
      * Clear all strategies from the middleware.
-     *
-     * @return void
      */
-    public function clearStrategies()
+    public function clearStrategies() : void
     {
         $this->strategies = [];
     }

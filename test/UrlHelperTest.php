@@ -326,6 +326,8 @@ class UrlHelperTest extends TestCase
         $this->expectExceptionMessage('Fragment identifier must conform to RFC 3986');
         $this->expectExceptionCode(400);
 
+        $this->router->generateUri('foo', [], [])->willReturn('/foo');
+
         $helper = $this->createHelper();
         $helper('foo', [], [], $fragmentIdentifier);
     }
