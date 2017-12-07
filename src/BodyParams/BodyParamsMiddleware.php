@@ -1,9 +1,11 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-expressive-helpers for the canonical source repository
- * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-expressive-helpers/blob/master/LICENSE.md New BSD License
  */
+
+declare(strict_types=1);
 
 namespace Zend\Expressive\Helper\BodyParams;
 
@@ -46,21 +48,16 @@ class BodyParamsMiddleware implements MiddlewareInterface
 
     /**
      * Add a body parsing strategy to the middleware.
-     *
-     * @param StrategyInterface $strategy
-     * @return void
      */
-    public function addStrategy(StrategyInterface $strategy)
+    public function addStrategy(StrategyInterface $strategy) : void
     {
         $this->strategies[] = $strategy;
     }
 
     /**
      * Clear all strategies from the middleware.
-     *
-     * @return void
      */
-    public function clearStrategies()
+    public function clearStrategies() : void
     {
         $this->strategies = [];
     }

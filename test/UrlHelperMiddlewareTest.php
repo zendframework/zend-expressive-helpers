@@ -1,9 +1,11 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-expressive-helpers for the canonical source repository
- * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-expressive-helpers/blob/master/LICENSE.md New BSD License
  */
+
+declare(strict_types=1);
 
 namespace ZendTest\Expressive\Helper;
 
@@ -11,7 +13,6 @@ use Interop\Http\Server\RequestHandlerInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Expressive\Helper\UrlHelper;
@@ -37,20 +38,18 @@ class UrlHelperMiddlewareTest extends TestCase
 
     public function testInvocationInjectsHelperWithRouteResultWhenPresentInRequest()
     {
+        $response = $this->prophesize(ResponseInterface::class);
+
         $routeResult = $this->prophesize(RouteResult::class)->reveal();
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(RouteResult::class, false)->willReturn($routeResult);
         $this->helper->setRouteResult($routeResult)->shouldBeCalled();
 
-        $response = $this->prophesize(ResponseInterface::class)->reveal();
-
         $handler = $this->prophesize(RequestHandlerInterface::class);
-        $handler->handle(Argument::type(RequestInterface::class))->will(function ($req) use ($response) {
-            return $response;
-        });
+        $handler->handle(Argument::type(ServerRequestInterface::class))->will([$response, 'reveal']);
 
         $middleware = $this->createMiddleware();
-        $this->assertSame($response, $middleware->process(
+        $this->assertSame($response->reveal(), $middleware->process(
             $request->reveal(),
             $handler->reveal()
         ));
@@ -58,19 +57,17 @@ class UrlHelperMiddlewareTest extends TestCase
 
     public function testInvocationDoesNotInjectHelperWithRouteResultWhenAbsentInRequest()
     {
+        $response = $this->prophesize(ResponseInterface::class);
+
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(RouteResult::class, false)->willReturn(false);
         $this->helper->setRouteResult(Argument::any())->shouldNotBeCalled();
 
-        $response = $this->prophesize(ResponseInterface::class)->reveal();
-
         $handler = $this->prophesize(RequestHandlerInterface::class);
-        $handler->handle(Argument::type(RequestInterface::class))->will(function ($req) use ($response) {
-            return $response;
-        });
+        $handler->handle(Argument::type(ServerRequestInterface::class))->will([$response, 'reveal']);
 
         $middleware = $this->createMiddleware();
-        $this->assertSame($response, $middleware->process(
+        $this->assertSame($response->reveal(), $middleware->process(
             $request->reveal(),
             $handler->reveal()
         ));

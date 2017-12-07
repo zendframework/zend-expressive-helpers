@@ -1,9 +1,11 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-expressive-helpers for the canonical source repository
- * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-expressive-helpers/blob/master/LICENSE.md New BSD License
  */
+
+declare(strict_types=1);
 
 namespace Zend\Expressive\Helper;
 
@@ -19,9 +21,6 @@ class ServerUrlMiddleware implements MiddlewareInterface
      */
     private $helper;
 
-    /**
-     * @param ServerUrlHelper $helper
-     */
     public function __construct(ServerUrlHelper $helper)
     {
         $this->helper = $helper;
@@ -35,7 +34,6 @@ class ServerUrlMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
         $this->helper->setUri($request->getUri());
-
         return $handler->handle($request);
     }
 }
