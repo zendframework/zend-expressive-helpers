@@ -1,9 +1,11 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-expressive-helpers for the canonical source repository
- * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-expressive-helpers/blob/master/LICENSE.md New BSD License
  */
+
+declare(strict_types=1);
 
 namespace Zend\Expressive\Helper\BodyParams;
 
@@ -12,10 +14,7 @@ use Zend\Expressive\Helper\Exception\MalformedRequestBodyException;
 
 class JsonStrategy implements StrategyInterface
 {
-    /**
-     * {@inheritDoc}
-     */
-    public function match($contentType)
+    public function match(string $contentType) : bool
     {
         $parts = explode(';', $contentType);
         $mime = array_shift($parts);
@@ -27,7 +26,7 @@ class JsonStrategy implements StrategyInterface
      *
      * @throws MalformedRequestBodyException
      */
-    public function parse(ServerRequestInterface $request)
+    public function parse(ServerRequestInterface $request) : ServerRequestInterface
     {
         $rawBody = (string) $request->getBody();
         $parsedBody = json_decode($rawBody, true);
