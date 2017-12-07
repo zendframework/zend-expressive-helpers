@@ -7,17 +7,16 @@
 
 namespace ZendTest\Expressive\Helper;
 
+use Interop\Http\Server\RequestHandlerInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Webimpress\HttpMiddlewareCompatibility\HandlerInterface as DelegateInterface;
 use Zend\Expressive\Helper\UrlHelper;
 use Zend\Expressive\Helper\UrlHelperMiddleware;
 use Zend\Expressive\Router\RouteResult;
-
-use const Webimpress\HttpMiddlewareCompatibility\HANDLER_METHOD;
 
 class UrlHelperMiddlewareTest extends TestCase
 {
@@ -43,15 +42,17 @@ class UrlHelperMiddlewareTest extends TestCase
         $request->getAttribute(RouteResult::class, false)->willReturn($routeResult);
         $this->helper->setRouteResult($routeResult)->shouldBeCalled();
 
-        $delegate = $this->prophesize(DelegateInterface::class);
-        $delegate->{HANDLER_METHOD}(Argument::type(RequestInterface::class))->will(function ($req) {
-            return 'COMPLETE';
+        $response = $this->prophesize(ResponseInterface::class)->reveal();
+
+        $handler = $this->prophesize(RequestHandlerInterface::class);
+        $handler->handle(Argument::type(RequestInterface::class))->will(function ($req) use ($response) {
+            return $response;
         });
 
         $middleware = $this->createMiddleware();
-        $this->assertEquals('COMPLETE', $middleware->process(
+        $this->assertSame($response, $middleware->process(
             $request->reveal(),
-            $delegate->reveal()
+            $handler->reveal()
         ));
     }
 
@@ -61,15 +62,17 @@ class UrlHelperMiddlewareTest extends TestCase
         $request->getAttribute(RouteResult::class, false)->willReturn(false);
         $this->helper->setRouteResult(Argument::any())->shouldNotBeCalled();
 
-        $delegate = $this->prophesize(DelegateInterface::class);
-        $delegate->{HANDLER_METHOD}(Argument::type(RequestInterface::class))->will(function ($req) {
-            return 'COMPLETE';
+        $response = $this->prophesize(ResponseInterface::class)->reveal();
+
+        $handler = $this->prophesize(RequestHandlerInterface::class);
+        $handler->handle(Argument::type(RequestInterface::class))->will(function ($req) use ($response) {
+            return $response;
         });
 
         $middleware = $this->createMiddleware();
-        $this->assertEquals('COMPLETE', $middleware->process(
+        $this->assertSame($response, $middleware->process(
             $request->reveal(),
-            $delegate->reveal()
+            $handler->reveal()
         ));
     }
 }

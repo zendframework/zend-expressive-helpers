@@ -7,14 +7,12 @@
 
 namespace ZendTest\Expressive\Helper;
 
+use Interop\Http\Server\RequestHandlerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
-use Webimpress\HttpMiddlewareCompatibility\HandlerInterface as DelegateInterface;
 use Zend\Expressive\Helper\ContentLengthMiddleware;
-
-use const Webimpress\HttpMiddlewareCompatibility\HANDLER_METHOD;
 
 class ContentLengthMiddlewareTest extends TestCase
 {
@@ -24,9 +22,9 @@ class ContentLengthMiddlewareTest extends TestCase
         $this->request = $request = $this->prophesize(ServerRequestInterface::class)->reveal();
         $this->stream = $this->prophesize(StreamInterface::class);
 
-        $delegate = $this->prophesize(DelegateInterface::class);
-        $delegate->{HANDLER_METHOD}($request)->will([$response, 'reveal']);
-        $this->delegate = $delegate->reveal();
+        $handler = $this->prophesize(RequestHandlerInterface::class);
+        $handler->handle($request)->will([$response, 'reveal']);
+        $this->handler = $handler->reveal();
 
         $this->middleware = new ContentLengthMiddleware();
     }
@@ -34,7 +32,7 @@ class ContentLengthMiddlewareTest extends TestCase
     public function testReturnsResponseVerbatimIfContentLengthHeaderPresent()
     {
         $this->response->hasHeader('Content-Length')->willReturn(true);
-        $response = $this->middleware->process($this->request, $this->delegate);
+        $response = $this->middleware->process($this->request, $this->handler);
         $this->assertSame($this->response->reveal(), $response);
     }
 
@@ -44,7 +42,7 @@ class ContentLengthMiddlewareTest extends TestCase
         $this->response->hasHeader('Content-Length')->willReturn(false);
         $this->response->getBody()->will([$this->stream, 'reveal']);
 
-        $response = $this->middleware->process($this->request, $this->delegate);
+        $response = $this->middleware->process($this->request, $this->handler);
         $this->assertSame($this->response->reveal(), $response);
     }
 
@@ -55,7 +53,7 @@ class ContentLengthMiddlewareTest extends TestCase
         $this->response->getBody()->will([$this->stream, 'reveal']);
         $this->response->withHeader('Content-Length', '42')->will([$this->response, 'reveal']);
 
-        $response = $this->middleware->process($this->request, $this->delegate);
+        $response = $this->middleware->process($this->request, $this->handler);
         $this->assertSame($this->response->reveal(), $response);
     }
 }

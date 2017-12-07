@@ -7,18 +7,16 @@
 
 namespace ZendTest\Expressive\Helper\BodyParams;
 
+use Interop\Http\Server\RequestHandlerInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Psr\Http\Message\ServerRequestInterface;
-use Webimpress\HttpMiddlewareCompatibility\HandlerInterface as DelegateInterface;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 use Zend\Diactoros\Stream;
 use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
 use Zend\Expressive\Helper\BodyParams\StrategyInterface;
 use Zend\Expressive\Helper\Exception\MalformedRequestBodyException;
-
-use const Webimpress\HttpMiddlewareCompatibility\HANDLER_METHOD;
 
 class BodyParamsMiddlewareTest extends TestCase
 {
@@ -43,29 +41,29 @@ class BodyParamsMiddlewareTest extends TestCase
         $this->body->rewind();
     }
 
-    private function mockDelegate(callable $callback)
+    private function mockHandler(callable $callback)
     {
-        $delegate = $this->prophesize(DelegateInterface::class);
+        $handler = $this->prophesize(RequestHandlerInterface::class);
 
-        $delegate
-            ->{HANDLER_METHOD}(Argument::type(ServerRequestInterface::class))
+        $handler
+            ->handle(Argument::type(ServerRequestInterface::class))
             ->will(function ($args) use ($callback) {
                 $request = $args[0];
                 return $callback($request);
             });
 
-        return $delegate;
+        return $handler;
     }
 
-    private function mockDelegateToNeverTrigger()
+    private function mockHandlerToNeverTrigger()
     {
-        $delegate = $this->prophesize(DelegateInterface::class);
+        $handler = $this->prophesize(RequestHandlerInterface::class);
 
-        $delegate
-            ->{HANDLER_METHOD}(Argument::type(ServerRequestInterface::class))
+        $handler
+            ->handle(Argument::type(ServerRequestInterface::class))
             ->shouldNotBeCalled();
 
-        return $delegate;
+        return $handler;
     }
 
     public function jsonProvider()
@@ -88,7 +86,7 @@ class BodyParamsMiddlewareTest extends TestCase
 
         $this->bodyParams->process(
             $serverRequest,
-            $this->mockDelegate(function (ServerRequestInterface $request) use (&$serverRequest) {
+            $this->mockHandler(function (ServerRequestInterface $request) use (&$serverRequest) {
                 $serverRequest = $request;
                 return new Response();
             })->reveal()
@@ -125,7 +123,7 @@ class BodyParamsMiddlewareTest extends TestCase
 
         $this->bodyParams->process(
             $originalRequest,
-            $this->mockDelegate(function (ServerRequestInterface $request) use (&$finalRequest) {
+            $this->mockHandler(function (ServerRequestInterface $request) use (&$finalRequest) {
                 $finalRequest = $request;
                 return new Response();
             })->reveal()
@@ -160,7 +158,7 @@ class BodyParamsMiddlewareTest extends TestCase
 
         $response = $middleware->process(
             $serverRequest,
-            $this->mockDelegate(function (ServerRequestInterface $request) use ($expectedReturn, $expectedResponse) {
+            $this->mockHandler(function (ServerRequestInterface $request) use ($expectedReturn, $expectedResponse) {
                 $this->assertSame($expectedReturn, $request);
                 return $expectedResponse;
             })->reveal()
@@ -178,7 +176,7 @@ class BodyParamsMiddlewareTest extends TestCase
 
         $response = $middleware->process(
             $serverRequest,
-            $this->mockDelegate(function (ServerRequestInterface $request) use ($serverRequest, $expectedResponse) {
+            $this->mockHandler(function (ServerRequestInterface $request) use ($serverRequest, $expectedResponse) {
                 $this->assertSame($serverRequest, $request);
                 return $expectedResponse;
             })->reveal()
@@ -204,7 +202,7 @@ class BodyParamsMiddlewareTest extends TestCase
 
         $middleware->process(
             $serverRequest,
-            $this->mockDelegateToNeverTrigger()->reveal()
+            $this->mockHandlerToNeverTrigger()->reveal()
         );
     }
 
@@ -237,29 +235,29 @@ class BodyParamsMiddlewareTest extends TestCase
             ['Content-type' => 'application/json;charset=utf-8']
         );
 
-        $delegateTriggered = false;
+        $handlerTriggered = false;
 
         $result = $this->bodyParams->process(
             $serverRequest,
-            $this->mockDelegate(function (ServerRequestInterface $request) use ($serverRequest, &$delegateTriggered) {
-                $delegateTriggered = true;
+            $this->mockHandler(function (ServerRequestInterface $request) use ($serverRequest, &$handlerTriggered) {
+                $handlerTriggered = true;
 
                 $this->assertNotSame(
                     $request,
                     $serverRequest,
-                    'Request passed to delegate is the same as the one passed to BodyParamsMiddleware and should not be'
+                    'Request passed to handler is the same as the one passed to BodyParamsMiddleware and should not be'
                 );
 
                 $this->assertSame(
                     json_encode(['foo' => 'bar']),
                     $request->getAttribute('rawBody'),
-                    'Request passed to delegate does not contain expected rawBody contents'
+                    'Request passed to handler does not contain expected rawBody contents'
                 );
 
                 $this->assertSame(
                     ['foo' => 'bar'],
                     $request->getParsedBody(),
-                    'Request passed to delegate does not contain expected parsed body'
+                    'Request passed to handler does not contain expected parsed body'
                 );
 
                 return new Response();
@@ -267,6 +265,6 @@ class BodyParamsMiddlewareTest extends TestCase
         );
 
         $this->assertInstanceOf(Response::class, $result);
-        $this->assertTrue($delegateTriggered);
+        $this->assertTrue($handlerTriggered);
     }
 }
