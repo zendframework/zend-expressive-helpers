@@ -12,8 +12,9 @@
     ],
     "extra": {
         "branch-alias": {
-            "dev-master": "4.2-dev",
-            "dev-develop": "4.3-dev"
+            "dev-master": "4.2.x-dev",
+            "dev-develop": "4.3.x-dev",
+            "dev-release-5.0.0": "5.0.x-dev"
         }
     },
     "config": {
