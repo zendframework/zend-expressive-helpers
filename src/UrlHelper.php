@@ -59,10 +59,10 @@ class UrlHelper
      * @throws InvalidArgumentException for malformed fragment identifiers.
      */
     public function __invoke(
-        ?string $routeName = null,
+        string $routeName = null,
         array $routeParams = [],
         array $queryParams = [],
-        ?string $fragmentIdentifier = null,
+        string $fragmentIdentifier = null,
         array $options = []
     ) : string {
         $result = $this->getRouteResult();
@@ -112,10 +112,10 @@ class UrlHelper
      * @see UrlHelper::__invoke()
      */
     public function generate(
-        ?string $routeName = null,
+        string $routeName = null,
         array $routeParams = [],
         array $queryParams = [],
-        ?string $fragmentIdentifier = null,
+        string $fragmentIdentifier = null,
         array $options = []
     ) : string {
         return $this($routeName, $routeParams, $queryParams, $fragmentIdentifier, $options);
