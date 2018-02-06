@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 5.0.0alpha2 - 2018-02-06
+
+### Added
+
+- [#57](https://github.com/zendframework/zend-expressive-helpers/pull/57)
+  adds `Zend\Expressive\Router\ZendRouter\ConfigProvider` and exposes it as a
+  config provider within the package definition.
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 5.0.0alpha1 - 2018-02-06
 
 ### Added
