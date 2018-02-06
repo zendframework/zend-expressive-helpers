@@ -9,10 +9,10 @@ declare(strict_types=1);
 
 namespace Zend\Expressive\Helper\BodyParams;
 
-use Interop\Http\Server\MiddlewareInterface;
-use Interop\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 class BodyParamsMiddleware implements MiddlewareInterface
 {

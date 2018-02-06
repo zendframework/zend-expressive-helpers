@@ -9,11 +9,11 @@ declare(strict_types=1);
 
 namespace ZendTest\Expressive\Helper;
 
-use Interop\Http\Server\RequestHandlerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Zend\Expressive\Helper\ContentLengthMiddleware;
 
 class ContentLengthMiddlewareTest extends TestCase
