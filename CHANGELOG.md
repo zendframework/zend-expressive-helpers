@@ -2,12 +2,12 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 5.0.0alpha1 - TBD
+## 5.0.0alpha1 - 2018-02-06
 
 ### Added
 
-- [#50](https://github.com/zendframework/zend-expressive-helpers/pull/50)
-  adds support for http-interop/http-server-middleware.
+- [#55](https://github.com/zendframework/zend-expressive-helpers/pull/55)
+  adds support for PSR-15 middleware.
 
 ### Changed
 
@@ -39,8 +39,9 @@ All notable changes to this project will be documented in this file, in reverse 
 - [#50](https://github.com/zendframework/zend-expressive-helpers/pull/50)
   removes support for PHP versions 5.6 and 7.0.
 
-- [#50](https://github.com/zendframework/zend-expressive-helpers/pull/50)
-  removes support for http-interop/http-middleware of all versions.
+- [#50](https://github.com/zendframework/zend-expressive-helpers/pull/50) and
+  [#55](https://github.com/zendframework/zend-expressive-helpers/pull/55)
+  remove support for http-interop/http-middleware of all versions.
 
 ### Fixed
 
