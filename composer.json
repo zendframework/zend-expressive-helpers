@@ -58,7 +58,7 @@
             "dev-release-5.0.0": "5.0.x-dev"
         },
         "zf": {
-            "config-provider": "Zend\\Expressive\\Router\\ConfigProvider"
+            "config-provider": "Zend\\Expressive\\Helper\\ConfigProvider"
         }
     },
     "scripts": {
