@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 5.0.0alpha3 - 2018-02-06
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Corrects the namespace used to expose the config provider within the package;
+  it now correctly reads `Zend\Expressive\Helper\ConfigProvider`.
+
 ## 5.0.0alpha2 - 2018-02-06
 
 ### Added
