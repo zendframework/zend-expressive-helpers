@@ -13,17 +13,6 @@ Install this library using composer:
 $ composer require zendframework/zend-expressive-helpers
 ```
 
-We recommend using a dependency injection container, and typehint against
-[container-interop](https://github.com/container-interop/container-interop). We
-can recommend the following implementations:
-
-- [zend-servicemanager](https://github.com/zendframework/zend-servicemanager):
-  `composer require zendframework/zend-servicemanager`
-- [pimple-interop](https://github.com/moufmouf/pimple-interop):
-  `composer require mouf/pimple-interop`
-- [Aura.Di](https://github.com/auraphp/Aura.Di)
-  `composer require aura/di`
-
 ## Helpers Provided
 
 ### UrlHelper
@@ -36,98 +25,25 @@ the `UrlHelper` with it; when this occurs, if the route being used to generate
 a URI was also the one matched during routing, you can provide a subset of
 routing parameters, and any not provided will be pulled from those matched.
 
-In order to use the helper, you will need to instantiate it with the current
-`RouterInterface`. The factory `Zend\Expressive\Helper\UrlHelperFactory` has
-been provided for this purpose, and can be used trivially with most
-dependency injection containers implementing container-interop:
-
-```php
-use Zend\Expressive\Helper\UrlHelper;
-use Zend\Expressive\Helper\UrlHelperFactory;
-
-// zend-servicemanager:
-$services->setFactory(UrlHelper::class, UrlHelperFactory::class);
-
-// Pimple:
-$pimple[UrlHelper::class] = $pimple->share(function ($container) {
-    $factory = new UrlHelperFactory();
-    return $factory($container);
-});
-
-// Aura.Di:
-$container->set(UrlHelperFactory::class, $container->lazyNew(UrlHelperFactory::class));
-$container->set(
-    UrlHelper::class,
-    $container->lazyGetCall(UrlHelperFactory::class, '__invoke', $container)
-);
-```
-
-The following dependency configuration will work for all three when using the
-Expressive skeleton:
-
-```php
-return ['dependencies' => [
-    'factories' => [
-        UrlHelper::class => UrlHelperFactory::class,
-    ],
-]]
-```
-
-> #### Factory requires RouterInterface
->
-> The factory requires that a service named `Zend\Expressive\Router\RouterInterface` is present,
-> and will raise an exception if the service is not found.
-
-For the helper to be useful, it must be injected with a
-`Zend\Expressive\Router\RouteResult`. To automate this, we provide a middleware
-class, `UrlHelperMiddleware`, which accepts the `UrlHelper` instance.
-When invoked, it looks for a `RouteResult` request attribute, and, if found,
-injects it into the `UrlHelper`. To register this middleware, you will need to:
-
-- Register the `UrlHelperMiddleware` as a service in your container.
-- Register the `UrlHelperMiddleware` as middleware between the Expressive
-  routing and dispatch middleware.
-
-The following examples demonstrate registering the services.
-
-```php
-use Zend\Expressive\Helper\UrlHelperMiddleware;
-use Zend\Expressive\Helper\UrlHelperMiddlewareFactory;
-
-// zend-servicemanager:
-$services->setFactory(UrlHelperMiddleware::class, UrlHelperMiddlewareFactory::class);
-
-// Pimple:
-$pimple[UrlHelperMiddleware::class] = $pimple->share(function ($container) {
-    $factory = new UrlHelperMiddlewareFactory();
-    return $factory($container);
-});
-
-// Aura.Di:
-$container->set(UrlHelperMiddlewareFactory::class, $container->lazyNew(UrlHelperMiddlewareFactory::class));
-$container->set(
-    UrlHelperMiddleware::class,
-    $container->lazyGetCall(UrlHelperMiddlewareFactory::class, '__invoke', $container)
-);
-```
-
 To register the `UrlHelperMiddleware`:
 
 ```php
 use Zend\Expressive\Helper\UrlHelperMiddleware;
+use Zend\Expressive\Router\Middleware\DispatchMiddleware;
+use Zend\Expressive\Router\Middleware\RouteMiddleware;
 
-$app->pipeRoutingMiddleware();
+$app->pipe(RouteMiddleware::class);
 $app->pipe(UrlHelperMiddleware::class);
-$app->pipeDispatchMiddleware();
+$app->pipe(DispatchMiddleware::class);
 
 // Or use configuration:
 // [
 //     'middleware_pipeline' => [
 //         'routing' => [
 //             'middleware' => [
-//                 Zend\Expressive\Container\ApplicationFactory::ROUTING_MIDDLEWARE,
+//                 RouteMiddleware::class,
 //                 UrlHelperMiddleware::class,
-//                 Zend\Expressive\Container\ApplicationFactory::DISPATCH_MIDDLEWARE,
+//                 DispatchMiddleware::class,
 //             ],
 //             'priority' => 1,
 //         ],
@@ -135,40 +51,17 @@ $app->pipeDispatchMiddleware();
 // ]
 ```
 
-The following dependency configuration will work for all three when using the
-Expressive skeleton:
-
-```php
-return [
-    'dependencies' => [
-        'invokables' => [
-        ],
-        'factories' => [
-            UrlHelper::class => UrlHelperFactory::class,
-            UrlHelperMiddleware::class => UrlHelperMiddlewareFactory::class,
-        ],
-    ],
-    'middleware_pipeline' => [
-        'routing' => [
-            'middleware' => [
-                Zend\Expressive\Container\ApplicationFactory::ROUTING_MIDDLEWARE,
-                UrlHelperMiddleware::class,
-                Zend\Expressive\Container\ApplicationFactory::DISPATCH_MIDDLEWARE,
-            ],
-            'priority' => 1,
-        ],
-    ],
-]
-```
-
-
-Compose the helper in your middleware (or elsewhere), and then use it to
+Compose the helper in your handler (or elsewhere), and then use it to
 generate URI paths:
 
 ```php
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Zend\Diactoros\Response;
 use Zend\Expressive\Helper\UrlHelper;
 
-class FooMiddleware
+class FooHandler implements RequestHandlerInterface
 {
     private $helper;
 
@@ -177,13 +70,14 @@ class FooMiddleware
         $this->helper = $helper;
     }
 
-    public function __invoke($request, $response, callable $next)
+    public function handle(ServerRequestInterface $request) : ResponseInterface
     {
-        $response = $response->withHeader(
+        $response = new Response();
+
+        return $response->withHeader(
             'Link',
             $this->helper->generate('resource', ['id' => 'sha1'])
         );
-        return $next($request, $response);
     }
 }
 ```
@@ -192,7 +86,13 @@ You can use the methods `generate()` and `__invoke()` interchangeably (i.e., you
 can use the helper as a function if desired). The signature is:
 
 ```php
-function ($routeName, array $params = []) : string
+function (
+    string $routeName = null,
+    array $routeParams = [],
+    array $queryParams = [],
+    string $fragmentIdentifier = null,
+    array $options = []
+) : string
 ```
 
 Where:
@@ -200,13 +100,13 @@ Where:
 - `$routeName` is the name of a route defined in the composed router. You may
   omit this argument if you want to generate the path for the currently matched
   request.
-- `$params` is an array of substitutions to use for the provided route, with the
+- `$routeParams` is an array of substitutions to use for the provided route, with the
   following behavior:
   - If a `RouteResult` is composed in the helper, and the `$routeName` matches
     it, the provided `$params` will be merged with any matched parameters, with
     those provided taking precedence.
   - If a `RouteResult` is not composed, or if the composed result does not match
-    the provided `$routeName`, then only the `$params` provided will be used 
+    the provided `$routeName`, then only the `$params` provided will be used
     for substitutions.
   - If no `$params` are provided, and the `$routeName` matches the currently
     matched route, then any matched parameters found will be used.
@@ -237,9 +137,13 @@ to the router:
 
 ```php
 use Locale;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Zend\Expressive\Helper\UrlHelper;
 
-class LocaleMiddleware
+class LocaleMiddleware implements MiddlewareInterface
 {
     private $helper;
 
@@ -248,23 +152,22 @@ class LocaleMiddleware
         $this->helper = $helper;
     }
 
-    public function __invoke($request, $response, $next)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
         $uri = $request->getUri();
         $path = $uri->getPath();
         if (! preg_match('#^/(?P<lang>[a-z]{2})/#', $path, $matches)) {
-            return $next($request, $response);
+            return $handler->handle($request);
         }
 
         $lang = $matches['lang'];
         Locale::setDefault($lang);
         $this->helper->setBasePath($lang);
 
-        return $next(
+        return $handler->handle(
             $request->withUri(
                 $uri->withPath(substr($path, 3))
-            ),
-            $response
+            )
         );
     }
 }
@@ -294,46 +197,19 @@ As such, you will need to:
 - Register the `ServerUrlMiddleware` as a service in your container.
 - Register the `ServerUrlMiddleware` early in your middleware pipeline.
 
-The following examples demonstrate registering the services.
-
-```php
-use Zend\Expressive\Helper\ServerUrlHelper;
-use Zend\Expressive\Helper\ServerUrlMiddleware;
-use Zend\Expressive\Helper\ServerUrlMiddlewareFactory;
-
-// zend-servicemanager:
-$services->setInvokableClass(ServerUrlHelper::class, ServerUrlHelper::class);
-$services->setFactory(ServerUrlMiddleware::class, ServerUrlMiddlewareFactory::class);
-
-// Pimple:
-$pimple[ServerUrlHelper::class] = $pimple->share(function ($container) {
-    return new ServerUrlHelper();
-});
-$pimple[ServerUrlMiddleware::class] = $pimple->share(function ($container) {
-    $factory = new ServerUrlMiddlewareFactory();
-    return $factory($container);
-});
-
-// Aura.Di:
-$container->set(ServerUrlHelper::class, $container->lazyNew(ServerUrlHelper::class));
-$container->set(ServerUrlMiddlewareFactory::class, $container->lazyNew(ServerUrlMiddlewareFactory::class));
-$container->set(
-    ServerUrlMiddleware::class,
-    $container->lazyGetCall(ServerUrlMiddlewareFactory::class, '__invoke', $container)
-);
-```
-
 To register the `ServerUrlMiddleware` in your middleware pipeline:
 
 ```php
 use Zend\Expressive\Helper\ServerUrlMiddleware;
+use Zend\Expressive\Router\Middleware\DispatchMiddleware;
+use Zend\Expressive\Router\Middleware\RouteMiddleware;
 
 // Do this early, before piping other middleware or routes:
 $app->pipe(ServerUrlMiddleware::class);
 
 /* ... */
-$app->pipeRoutingMiddleware();
-$app->pipeDispatchMiddleware();
+$app->pipe(RouteMiddleware::class);
+$app->pipe(DispatchMiddleware::class);
 
 // Or use configuration:
 // [
@@ -346,35 +222,17 @@ $app->pipeDispatchMiddleware();
 // ]
 ```
 
-The following dependency configuration will work for all three when using the
-Expressive skeleton:
-
-```php
-return [
-    'dependencies' => [
-        'invokables' => [
-            ServerUrlHelper::class => ServerUrlHelper::class,
-        ],
-        'factories' => [
-            ServerUrlMiddleware::class => ServerUrlMiddlewareFactory::class,
-        ],
-    ],
-    'middleware_pipeline' => [
-        [
-            'middleware' => ServerUrlMiddleware::class,
-            'priority' => PHP_INT_MAX,
-        ],
-    ],
-]
-```
-
-Compose the helper in your middleware (or elsewhere), and then use it to
+Compose the helper in your hanlder (or elsewhere), and then use it to
 generate URI paths:
 
 ```php
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Zend\Diactoros\Response;
 use Zend\Expressive\Helper\ServerUrlHelper;
 
-class FooMiddleware
+class FooHandler implements RequestHandlerInterface
 {
     private $helper;
 
@@ -383,13 +241,14 @@ class FooMiddleware
         $this->helper = $helper;
     }
 
-    public function __invoke($request, $response, callable $next)
+    public function handle(ServerRequestInterface $request) : ResponseInterface
     {
-        $response = $response->withHeader(
+        $response = new Response();
+
+        return $response->withHeader(
             'Link',
             $this->helper->generate() . '; rel="self"'
         );
-        return $next($request, $response);
     }
 }
 ```
@@ -398,7 +257,7 @@ You can use the methods `generate()` and `__invoke()` interchangeably (i.e., you
 can use the helper as a function if desired). The signature is:
 
 ```php
-function ($path = null) : string
+function (string $path = null) : string
 ```
 
 Where:
