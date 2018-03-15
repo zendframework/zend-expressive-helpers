@@ -11,6 +11,9 @@ namespace Zend\Expressive\Helper\BodyParams;
 
 use Psr\Http\Message\ServerRequestInterface;
 
+use function parse_str;
+use function preg_match;
+
 class FormUrlEncodedStrategy implements StrategyInterface
 {
     public function match(string $contentType) : bool

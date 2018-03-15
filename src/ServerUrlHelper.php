@@ -11,6 +11,9 @@ namespace Zend\Expressive\Helper;
 
 use Psr\Http\Message\UriInterface;
 
+use function preg_match;
+use function rtrim;
+
 /**
  * Helper class for generating a fully-qualified URI when provided a path.
  */

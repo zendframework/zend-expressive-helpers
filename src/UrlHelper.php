@@ -13,6 +13,14 @@ use InvalidArgumentException;
 use Zend\Expressive\Router\RouteResult;
 use Zend\Expressive\Router\RouterInterface;
 
+use function array_key_exists;
+use function array_merge;
+use function count;
+use function http_build_query;
+use function ltrim;
+use function preg_match;
+use function sprintf;
+
 class UrlHelper
 {
     /**

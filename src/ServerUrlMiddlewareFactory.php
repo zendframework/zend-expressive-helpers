@@ -11,6 +11,8 @@ namespace Zend\Expressive\Helper;
 
 use Psr\Container\ContainerInterface;
 
+use function sprintf;
+
 class ServerUrlMiddlewareFactory
 {
     /**

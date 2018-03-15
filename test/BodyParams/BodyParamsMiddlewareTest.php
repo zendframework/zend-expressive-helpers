@@ -20,6 +20,11 @@ use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
 use Zend\Expressive\Helper\BodyParams\StrategyInterface;
 use Zend\Expressive\Helper\Exception\MalformedRequestBodyException;
 
+use function fopen;
+use function fwrite;
+use function get_class;
+use function json_encode;
+
 class BodyParamsMiddlewareTest extends TestCase
 {
     /**
