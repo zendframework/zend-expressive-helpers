@@ -1,18 +1,18 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-expressive-helpers for the canonical source repository
- * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-expressive-helpers/blob/master/LICENSE.md New BSD License
  */
+
+declare(strict_types=1);
 
 namespace Zend\Expressive\Helper;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Webimpress\HttpMiddlewareCompatibility\HandlerInterface as DelegateInterface;
-use Webimpress\HttpMiddlewareCompatibility\MiddlewareInterface;
-
-use const Webimpress\HttpMiddlewareCompatibility\HANDLER_METHOD;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 class ServerUrlMiddleware implements MiddlewareInterface
 {
@@ -21,9 +21,6 @@ class ServerUrlMiddleware implements MiddlewareInterface
      */
     private $helper;
 
-    /**
-     * @param ServerUrlHelper $helper
-     */
     public function __construct(ServerUrlHelper $helper)
     {
         $this->helper = $helper;
@@ -31,19 +28,12 @@ class ServerUrlMiddleware implements MiddlewareInterface
 
     /**
      * Inject the ServerUrlHelper instance with the request URI.
-     *
      * Injects the ServerUrlHelper with the incoming request URI, and then invoke
      * the next middleware.
-     *
-     * @param ServerRequestInterface $request
-     * @param DelegateInterface      $delegate
-     *
-     * @return ResponseInterface
      */
-    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
         $this->helper->setUri($request->getUri());
-
-        return $delegate->{HANDLER_METHOD}($request);
+        return $handler->handle($request);
     }
 }

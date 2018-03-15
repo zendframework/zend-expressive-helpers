@@ -1,18 +1,20 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-expressive-helpers for the canonical source repository
- * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-expressive-helpers/blob/master/LICENSE.md New BSD License
  */
+
+declare(strict_types=1);
 
 namespace Zend\Expressive\Helper\BodyParams;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Webimpress\HttpMiddlewareCompatibility\HandlerInterface as DelegateInterface;
-use Webimpress\HttpMiddlewareCompatibility\MiddlewareInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
-use const Webimpress\HttpMiddlewareCompatibility\HANDLER_METHOD;
+use function in_array;
 
 class BodyParamsMiddleware implements MiddlewareInterface
 {
@@ -48,21 +50,16 @@ class BodyParamsMiddleware implements MiddlewareInterface
 
     /**
      * Add a body parsing strategy to the middleware.
-     *
-     * @param StrategyInterface $strategy
-     * @return void
      */
-    public function addStrategy(StrategyInterface $strategy)
+    public function addStrategy(StrategyInterface $strategy) : void
     {
         $this->strategies[] = $strategy;
     }
 
     /**
      * Clear all strategies from the middleware.
-     *
-     * @return void
      */
-    public function clearStrategies()
+    public function clearStrategies() : void
     {
         $this->strategies = [];
     }
@@ -70,16 +67,11 @@ class BodyParamsMiddleware implements MiddlewareInterface
     /**
      * Process an incoming server request and return a response, optionally delegating
      * to the next middleware component to create the response.
-     *
-     * @param ServerRequestInterface $request
-     * @param DelegateInterface      $delegate
-     *
-     * @return ResponseInterface
      */
-    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
         if (in_array($request->getMethod(), $this->nonBodyRequests)) {
-            return $delegate->{HANDLER_METHOD}($request);
+            return $handler->handle($request);
         }
 
         $header = $request->getHeaderLine('Content-Type');
@@ -89,10 +81,10 @@ class BodyParamsMiddleware implements MiddlewareInterface
             }
 
             // Matched! Parse and pass on to the next
-            return $delegate->{HANDLER_METHOD}($strategy->parse($request));
+            return $handler->handle($strategy->parse($request));
         }
 
         // No match; continue
-        return $delegate->{HANDLER_METHOD}($request);
+        return $handler->handle($request);
     }
 }

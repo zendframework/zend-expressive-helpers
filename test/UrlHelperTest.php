@@ -1,9 +1,11 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-expressive-helpers for the canonical source repository
- * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-expressive-helpers/blob/master/LICENSE.md New BSD License
  */
+
+declare(strict_types=1);
 
 namespace ZendTest\Expressive\Helper;
 
@@ -13,6 +15,7 @@ use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 use stdClass;
+use TypeError;
 use Zend\Expressive\Helper\Exception\RuntimeException;
 use Zend\Expressive\Helper\UrlHelper;
 use Zend\Expressive\Router\Exception\RuntimeException as RouterException;
@@ -250,8 +253,7 @@ class UrlHelperTest extends TestCase
      */
     public function testThrowsExceptionWhenSettingInvalidBasePaths($basePath)
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessageRegExp('/^Base path must be a string; received [a-zA-Z]+/');
+        $this->expectException(TypeError::class);
 
         $helper = $this->createHelper();
         $helper->setBasePath($basePath);
@@ -325,6 +327,8 @@ class UrlHelperTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Fragment identifier must conform to RFC 3986');
         $this->expectExceptionCode(400);
+
+        $this->router->generateUri('foo', [], [])->willReturn('/foo');
 
         $helper = $this->createHelper();
         $helper('foo', [], [], $fragmentIdentifier);

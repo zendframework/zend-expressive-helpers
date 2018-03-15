@@ -1,13 +1,18 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-expressive-helpers for the canonical source repository
- * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-expressive-helpers/blob/master/LICENSE.md New BSD License
  */
+
+declare(strict_types=1);
 
 namespace Zend\Expressive\Helper;
 
 use Psr\Http\Message\UriInterface;
+
+use function preg_match;
+use function rtrim;
 
 /**
  * Helper class for generating a fully-qualified URI when provided a path.
@@ -32,12 +37,11 @@ class ServerUrlHelper
      *
      * The $path may optionally contain the query string and/or fragment to
      * use.
-     *
-     * @param null|string $path
-     * @return string
      */
-    public function __invoke($path = null)
+    public function __invoke(string $path = null) : string
     {
+        $path = $path === null ? '' : $path;
+
         if ($this->uri instanceof UriInterface) {
             return $this->createUrlFromUri($path);
         }
@@ -57,29 +61,18 @@ class ServerUrlHelper
      * Generate a path relative to the current request URI.
      *
      * Proxies to __invoke().
-     *
-     * @param null|string $path
-     * @return string
      */
-    public function generate($path = null)
+    public function generate(string $path = null) : string
     {
         return $this($path);
     }
 
-    /**
-     * @param UriInterface $uri
-     * @return void
-     */
-    public function setUri(UriInterface $uri)
+    public function setUri(UriInterface $uri) : void
     {
         $this->uri = $uri;
     }
 
-    /**
-     * @param string $specification
-     * @return string
-     */
-    private function createUrlFromUri($specification)
+    private function createUrlFromUri(string $specification) : string
     {
         preg_match(
             '%^(?P<path>[^?#]*)(?:(?:\?(?P<query>[^#]*))?(?:\#(?P<fragment>.*))?)$%',

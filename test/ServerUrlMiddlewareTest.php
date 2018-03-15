@@ -1,9 +1,11 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-expressive-helpers for the canonical source repository
- * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-expressive-helpers/blob/master/LICENSE.md New BSD License
  */
+
+declare(strict_types=1);
 
 namespace ZendTest\Expressive\Helper;
 
@@ -12,12 +14,10 @@ use Prophecy\Argument;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
-use Webimpress\HttpMiddlewareCompatibility\HandlerInterface as DelegateInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Zend\Diactoros\Response;
 use Zend\Expressive\Helper\ServerUrlHelper;
 use Zend\Expressive\Helper\ServerUrlMiddleware;
-
-use const Webimpress\HttpMiddlewareCompatibility\HANDLER_METHOD;
 
 class ServerUrlMiddlewareTest extends TestCase
 {
@@ -32,14 +32,14 @@ class ServerUrlMiddlewareTest extends TestCase
 
         $invoked = false;
 
-        $delegate = $this->prophesize(DelegateInterface::class);
-        $delegate->{HANDLER_METHOD}(Argument::type(RequestInterface::class))->will(function ($req) use (&$invoked) {
+        $handler = $this->prophesize(RequestHandlerInterface::class);
+        $handler->handle(Argument::type(RequestInterface::class))->will(function ($req) use (&$invoked) {
             $invoked = true;
 
             return new Response();
         });
 
-        $test = $middleware->process($request->reveal(), $delegate->reveal());
+        $test = $middleware->process($request->reveal(), $handler->reveal());
         //$this->assertSame($response->reveal(), $test, 'Unexpected return value from middleware');
         $this->assertTrue($invoked, 'next() was not invoked');
 

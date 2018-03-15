@@ -1,15 +1,25 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-expressive-helpers for the canonical source repository
- * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-expressive-helpers/blob/master/LICENSE.md New BSD License
  */
+
+declare(strict_types=1);
 
 namespace Zend\Expressive\Helper;
 
 use InvalidArgumentException;
 use Zend\Expressive\Router\RouteResult;
 use Zend\Expressive\Router\RouterInterface;
+
+use function array_key_exists;
+use function array_merge;
+use function count;
+use function http_build_query;
+use function ltrim;
+use function preg_match;
+use function sprintf;
 
 class UrlHelper
 {
@@ -46,25 +56,23 @@ class UrlHelper
     /**
      * Generate a URL based on a given route.
      *
-     * @param null|string $routeName
-     * @param array $routeParams
-     * @param array $queryParams
-     * @param null|string $fragmentIdentifier
      * @param array $options Can have the following keys:
-     *                         - router (array): contains options to be passed to the router
-     *                         - reuse_result_params (bool): indicates if the current RouteResult
-     *                         parameters will be used, defaults to true
-     * @return string
-     * @throws Exception\RuntimeException
-     * @throws InvalidArgumentException
+     *     - router (array): contains options to be passed to the router
+     *     - reuse_result_params (bool): indicates if the current RouteResult
+     *       parameters will be used, defaults to true
+     * @throws Exception\RuntimeException for attempts to use the currently matched
+     *     route but routing failed.
+     * @throws Exception\RuntimeException for attempts to use a matched result
+     *     when none has been previously injected in the instance.
+     * @throws InvalidArgumentException for malformed fragment identifiers.
      */
     public function __invoke(
-        $routeName = null,
+        string $routeName = null,
         array $routeParams = [],
         array $queryParams = [],
-        $fragmentIdentifier = null,
+        string $fragmentIdentifier = null,
         array $options = []
-    ) {
+    ) : string {
         $result = $this->getRouteResult();
         if ($routeName === null && $result === null) {
             throw new Exception\RuntimeException(
@@ -110,21 +118,14 @@ class UrlHelper
      * Proxies to __invoke().
      *
      * @see UrlHelper::__invoke()
-     *
-     * @param null|string $routeName
-     * @param array $routeParams
-     * @param array $queryParams
-     * @param null|string $fragmentIdentifier
-     * @param array $options
-     * @return string
      */
     public function generate(
-        $routeName = null,
+        string $routeName = null,
         array $routeParams = [],
         array $queryParams = [],
-        $fragmentIdentifier = null,
+        string $fragmentIdentifier = null,
         array $options = []
-    ) {
+    ) : string {
         return $this($routeName, $routeParams, $queryParams, $fragmentIdentifier, $options);
     }
 
@@ -133,62 +134,40 @@ class UrlHelper
      *
      * When the route result is injected, the helper will use it to seed default
      * parameters if the URL being generated is for the route that was matched.
-     *
-     * @param RouteResult $result
-     * @return void
      */
-    public function setRouteResult(RouteResult $result)
+    public function setRouteResult(RouteResult $result) : void
     {
         $this->result = $result;
     }
 
     /**
      * Set the base path to prepend to a generated URI
-     *
-     * @param mixed $path
-     * @return void
-     * @throws InvalidArgumentException
      */
-    public function setBasePath($path)
+    public function setBasePath(string $path) : void
     {
-        if (! is_string($path)) {
-            throw new InvalidArgumentException(sprintf(
-                'Base path must be a string; received %s',
-                is_object($path) ? get_class($path) : gettype($path)
-            ));
-        }
-
         $this->basePath = '/' . ltrim($path, '/');
     }
 
     /**
      * Internal accessor for retrieving the route result.
-     *
-     * @return null|RouteResult
      */
-    protected function getRouteResult()
+    protected function getRouteResult() : ?RouteResult
     {
         return $this->result;
     }
 
     /**
      * Internal accessor for retrieving the base path.
-     *
-     * @return string
      */
-    public function getBasePath()
+    public function getBasePath() : string
     {
         return $this->basePath;
     }
 
     /**
-     * @param array $params
-     * @param RouteResult $result
-     * @param array $routerOptions
-     * @return string
      * @throws Exception\RuntimeException if current result is a routing failure.
      */
-    private function generateUriFromResult(array $params, RouteResult $result, array $routerOptions)
+    private function generateUriFromResult(array $params, RouteResult $result, array $routerOptions) : string
     {
         if ($result->isFailure()) {
             throw new Exception\RuntimeException(
@@ -214,11 +193,9 @@ class UrlHelper
      * invocation, with the latter having precedence.
      *
      * @param string $route Route name.
-     * @param RouteResult $result
      * @param array $params Parameters provided at invocation.
-     * @return array
      */
-    private function mergeParams($route, RouteResult $result, array $params)
+    private function mergeParams(string $route, RouteResult $result, array $params) : array
     {
         if ($result->isFailure()) {
             return $params;
@@ -233,12 +210,8 @@ class UrlHelper
 
     /**
      * Append query string arguments to a URI string, if any are present.
-     *
-     * @param string $uriString
-     * @param array $queryParams
-     * @return string
      */
-    private function appendQueryStringArguments($uriString, array $queryParams)
+    private function appendQueryStringArguments(string $uriString, array $queryParams) : string
     {
         if (count($queryParams) > 0) {
             return sprintf('%s?%s', $uriString, http_build_query($queryParams));
@@ -249,11 +222,9 @@ class UrlHelper
     /**
      * Append a fragment to a URI string, if present.
      *
-     * @param string $uriString
-     * @param null|string $fragmentIdentifier
-     * @return string
+     * @throws InvalidArgumentException if the fragment identifier is malformed.
      */
-    private function appendFragment($uriString, $fragmentIdentifier)
+    private function appendFragment(string $uriString, ?string $fragmentIdentifier) : string
     {
         if ($fragmentIdentifier !== null) {
             if (! preg_match(self::FRAGMENT_IDENTIFIER_REGEX, $fragmentIdentifier)) {
