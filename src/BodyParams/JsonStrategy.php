@@ -12,6 +12,17 @@ namespace Zend\Expressive\Helper\BodyParams;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Expressive\Helper\Exception\MalformedRequestBodyException;
 
+use function array_shift;
+use function explode;
+use function json_decode;
+use function json_last_error;
+use function json_last_error_msg;
+use function preg_match;
+use function sprintf;
+use function trim;
+
+use const JSON_ERROR_NONE;
+
 class JsonStrategy implements StrategyInterface
 {
     public function match(string $contentType) : bool

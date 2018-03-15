@@ -12,6 +12,8 @@ namespace Zend\Expressive\Helper;
 use Psr\Container\ContainerInterface;
 use Zend\Expressive\Router\RouterInterface;
 
+use function sprintf;
+
 class UrlHelperFactory
 {
     /**
