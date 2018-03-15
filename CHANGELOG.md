@@ -2,59 +2,16 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 5.0.0alpha3 - 2018-02-06
-
-### Added
-
-- Nothing.
-
-### Changed
-
-- Nothing.
-
-### Deprecated
-
-- Nothing.
-
-### Removed
-
-- Nothing.
-
-### Fixed
-
-- Corrects the namespace used to expose the config provider within the package;
-  it now correctly reads `Zend\Expressive\Helper\ConfigProvider`.
-
-## 5.0.0alpha2 - 2018-02-06
-
-### Added
-
-- [#57](https://github.com/zendframework/zend-expressive-helpers/pull/57)
-  adds `Zend\Expressive\Router\ZendRouter\ConfigProvider` and exposes it as a
-  config provider within the package definition.
-
-### Changed
-
-- Nothing.
-
-### Deprecated
-
-- Nothing.
-
-### Removed
-
-- Nothing.
-
-### Fixed
-
-- Nothing.
-
-## 5.0.0alpha1 - 2018-02-06
+## 5.0.0 - 2018-03-15
 
 ### Added
 
 - [#55](https://github.com/zendframework/zend-expressive-helpers/pull/55)
   adds support for PSR-15 middleware.
+
+- [#57](https://github.com/zendframework/zend-expressive-helpers/pull/57)
+  adds `Zend\Expressive\Router\ZendRouter\ConfigProvider` and exposes it as a
+  config provider within the package definition.
 
 ### Changed
 
@@ -89,50 +46,6 @@ All notable changes to this project will be documented in this file, in reverse 
 - [#50](https://github.com/zendframework/zend-expressive-helpers/pull/50) and
   [#55](https://github.com/zendframework/zend-expressive-helpers/pull/55)
   remove support for http-interop/http-middleware of all versions.
-
-### Fixed
-
-- Nothing.
-
-## 4.3.0 - TBD
-
-### Added
-
-- Nothing.
-
-### Changed
-
-- Nothing.
-
-### Deprecated
-
-- Nothing.
-
-### Removed
-
-- Nothing.
-
-### Fixed
-
-- Nothing.
-
-## 4.2.1 - TBD
-
-### Added
-
-- Nothing.
-
-### Changed
-
-- Nothing.
-
-### Deprecated
-
-- Nothing.
-
-### Removed
-
-- Nothing.
 
 ### Fixed
 
