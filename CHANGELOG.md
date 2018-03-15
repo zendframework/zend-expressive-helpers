@@ -2,15 +2,37 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 4.3.0 - TBD
+## 5.0.0 - 2018-03-15
 
 ### Added
 
-- Nothing.
+- [#55](https://github.com/zendframework/zend-expressive-helpers/pull/55)
+  adds support for PSR-15 middleware.
+
+- [#57](https://github.com/zendframework/zend-expressive-helpers/pull/57)
+  adds `Zend\Expressive\Router\ZendRouter\ConfigProvider` and exposes it as a
+  config provider within the package definition.
 
 ### Changed
 
-- Nothing.
+- [#51](https://github.com/zendframework/zend-expressive-helpers/pull/51)
+  changes a number of signatures to provide scalar type hints, return type hints,
+  and nullable types. Signatures with changes include:
+
+  - `Zend\Expressive\Helper\BodyParams\StrategyInterface`:
+    - The `match()` signature changes to `match(string $contentType) : bool`
+    - The `parse()` signature changes to `parse(ServerRequestInterface $request) : ServerRequestInterface`
+  - `Zend\Expressive\Helper\ServerUrlHelper` updates its public API to read as follows:
+    - `__invoke(string $path = null) : string`
+    - `generate(string $path = null) : string`
+    - `setUri(UriInterface $uri) : void`
+  - `Zend\Expressive\Helper\UrlHelper` updates its public API to read as follows:
+    - `__invoke(?string $routeName = null, array $routeParams = [], array $queryParams = [], ?string $fragmentIdentifier = null, array $options = []) : string`
+    - `generate(?string $routeName = null, array $routeParams = [], array $queryParams = [], ?string $fragmentIdentifier = null, array $options = []) : string`
+    - `setRouteResult(RouteResult $result) : void`
+    - `setBasePath(string $path) : void`
+    - `getRouteResult() : ?RouteResult`
+    - `getBasePath() : string`
 
 ### Deprecated
 
@@ -18,29 +40,12 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Removed
 
-- Nothing.
+- [#50](https://github.com/zendframework/zend-expressive-helpers/pull/50)
+  removes support for PHP versions 5.6 and 7.0.
 
-### Fixed
-
-- Nothing.
-
-## 4.2.1 - TBD
-
-### Added
-
-- Nothing.
-
-### Changed
-
-- Nothing.
-
-### Deprecated
-
-- Nothing.
-
-### Removed
-
-- Nothing.
+- [#50](https://github.com/zendframework/zend-expressive-helpers/pull/50) and
+  [#55](https://github.com/zendframework/zend-expressive-helpers/pull/55)
+  remove support for http-interop/http-middleware of all versions.
 
 ### Fixed
 
