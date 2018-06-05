@@ -15,6 +15,27 @@ use function sprintf;
 
 class UrlHelperMiddlewareFactory
 {
+    /** @var string */
+    private $urlHelperServiceName;
+
+    /**
+     * Allow serialization
+     */
+    public static function __set_state(array $data) : self
+    {
+        return new self(
+            $data['urlHelperServiceName'] ?? UrlHelper::class
+        );
+    }
+
+    /**
+     * Allow varying behavior based on URL helper service name.
+     */
+    public function __construct(string $urlHelperServiceName = UrlHelper::class)
+    {
+        $this->urlHelperServiceName = $urlHelperServiceName;
+    }
+
     /**
      * Create and return a UrlHelperMiddleware instance.
      *
@@ -23,14 +44,14 @@ class UrlHelperMiddlewareFactory
      */
     public function __invoke(ContainerInterface $container) : UrlHelperMiddleware
     {
-        if (! $container->has(UrlHelper::class)) {
+        if (! $container->has($this->urlHelperServiceName)) {
             throw new Exception\MissingHelperException(sprintf(
                 '%s requires a %s service at instantiation; none found',
                 UrlHelperMiddleware::class,
-                UrlHelper::class
+                $this->urlHelperServiceName
             ));
         }
 
-        return new UrlHelperMiddleware($container->get(UrlHelper::class));
+        return new UrlHelperMiddleware($container->get($this->urlHelperServiceName));
     }
 }
