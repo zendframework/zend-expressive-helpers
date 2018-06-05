@@ -48,8 +48,8 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "5.0.x-dev",
-            "dev-develop": "5.1.x-dev"
+            "dev-master": "5.1.x-dev",
+            "dev-develop": "5.2.x-dev"
         },
         "zf": {
             "config-provider": "Zend\\Expressive\\Helper\\ConfigProvider"
