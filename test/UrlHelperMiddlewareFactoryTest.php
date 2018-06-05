@@ -54,4 +54,26 @@ class UrlHelperMiddlewareFactoryTest extends TestCase
         $this->expectException(MissingHelperException::class);
         $factory($this->container->reveal());
     }
+
+    public function testFactoryUsesUrlHelperServiceProvidedAtInstantiation()
+    {
+        $helper = $this->prophesize(UrlHelper::class)->reveal();
+        $this->injectContainer(MyUrlHelper::class, $helper);
+        $factory = new UrlHelperMiddlewareFactory(MyUrlHelper::class);
+
+        $middleware = $factory($this->container->reveal());
+
+        $this->assertInstanceOf(UrlHelperMiddleware::class, $middleware);
+        $this->assertAttributeSame($helper, 'helper', $middleware);
+    }
+
+    public function testFactoryAllowsSerialization()
+    {
+        $factory = UrlHelperMiddlewareFactory::__set_state([
+            'urlHelperServiceName' => MyUrlHelper::class,
+        ]);
+
+        $this->assertInstanceOf(UrlHelperMiddlewareFactory::class, $factory);
+        $this->assertAttributeSame(MyUrlHelper::class, 'urlHelperServiceName', $factory);
+    }
 }

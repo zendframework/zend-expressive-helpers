@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 5.1.0 - TBD
+## 5.1.0 - 2018-06-05
 
 ### Added
 
@@ -10,7 +10,13 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Changed
 
-- Nothing.
+- [#62](https://github.com/zendframework/zend-expressive-helpers/pull/62) modifies the `UrlHelperFactory` to allow specifying both a string `$basePath` as well as a string `$routerServiceName`
+  to its constructor. This change allows having discrete factory instances for generating helpers
+  that use different router instances and/or which operate under path-segregated middleware.
+
+- [#62](https://github.com/zendframework/zend-expressive-helpers/pull/62) modifies the `UrlHelperMiddlewareFactory` to allow specifying a string `$urlHelperServiceName` to its constructor.
+  This change allows having discrete factory instances for generating URL helper middleware
+  that use different URL helper instances.
 
 ### Deprecated
 

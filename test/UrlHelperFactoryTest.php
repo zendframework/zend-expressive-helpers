@@ -55,11 +55,44 @@ class UrlHelperFactoryTest extends TestCase
         $helper = $this->factory->__invoke($this->container->reveal());
         $this->assertInstanceOf(UrlHelper::class, $helper);
         $this->assertAttributeSame($this->router->reveal(), 'router', $helper);
+        return $helper;
+    }
+
+    /**
+     * @depends testFactoryReturnsHelperWithRouterInjected
+     */
+    public function testHelperUsesDefaultBasePathWhenNoneProvidedAtInstantiation(UrlHelper $helper)
+    {
+        $this->assertEquals('/', $helper->getBasePath());
     }
 
     public function testFactoryRaisesExceptionWhenRouterIsNotPresentInContainer()
     {
         $this->expectException(MissingRouterException::class);
         $this->factory->__invoke($this->container->reveal());
+    }
+
+    public function testFactoryUsesBasePathAndRouterServiceProvidedAtInstantiation()
+    {
+        $this->injectContainerService(Router::class, $this->router->reveal());
+        $factory = new UrlHelperFactory('/api', Router::class);
+
+        $helper = $factory($this->container->reveal());
+
+        $this->assertInstanceOf(UrlHelper::class, $helper);
+        $this->assertAttributeSame($this->router->reveal(), 'router', $helper);
+        $this->assertEquals('/api', $helper->getBasePath());
+    }
+
+    public function testFactoryAllowsSerialization()
+    {
+        $factory = UrlHelperFactory::__set_state([
+            'basePath' => '/api',
+            'routerServiceName' => Router::class,
+        ]);
+
+        $this->assertInstanceOf(UrlHelperFactory::class, $factory);
+        $this->assertAttributeSame('/api', 'basePath', $factory);
+        $this->assertAttributeSame(Router::class, 'routerServiceName', $factory);
     }
 }
