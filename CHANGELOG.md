@@ -253,7 +253,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - [#30](https://github.com/zendframework/zend-expressive-helpers/pull/30) Use
   new ZF coding standard
-- [#31](https://github.com/zendframework/zend-expressive-helpers/pull/32) Check
+- [#31](https://github.com/zendframework/zend-expressive-helpers/pull/31) Check
   to ensure 100% test coverage is retained
 
 ### Deprecated
