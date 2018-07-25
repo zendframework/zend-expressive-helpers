@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 5.1.1 - TBD
+## 5.1.1 - 2018-07-25
 
 ### Added
 
@@ -22,7 +22,8 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
-- Nothing.
+- [#64](https://github.com/zendframework/zend-expressive-helpers/pull/64) prevents an unnecessary `json_decode()` call when the request contains
+  no body or an empty body.
 
 ## 5.1.0 - 2018-06-05
 
