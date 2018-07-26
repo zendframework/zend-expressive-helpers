@@ -27,9 +27,7 @@ class JsonStrategy implements StrategyInterface
 {
     public function match(string $contentType) : bool
     {
-        $parts = explode(';', $contentType);
-        $mime = array_shift($parts);
-        return (bool) preg_match('#[/+]json$#', trim($mime));
+        return 1 === preg_match('#^application/(|[\S]+\+)json($|[ ;])#', $contentType);
     }
 
     /**
