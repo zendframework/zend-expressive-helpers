@@ -18,7 +18,7 @@ class FormUrlEncodedStrategy implements StrategyInterface
 {
     public function match(string $contentType) : bool
     {
-        return (bool) preg_match('#^application/x-www-form-urlencoded($|[ ;])#', $contentType);
+        return 1 === preg_match('#^application/x-www-form-urlencoded($|[ ;])#', $contentType);
     }
 
     public function parse(ServerRequestInterface $request) : ServerRequestInterface

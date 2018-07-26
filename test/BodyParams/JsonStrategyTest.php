@@ -36,6 +36,7 @@ class JsonStrategyTest extends TestCase
             ['application/json;charset=utf-8'],
             ['application/hal+json;charset=utf-8'],
             ['application/vnd.resource.v2+json;charset=utf-8'],
+            ['application/vnd.resource.v2+json;charset=utf-8;other=value'],
         ];
     }
 
@@ -53,6 +54,9 @@ class JsonStrategyTest extends TestCase
     {
         return [
             ['application/json+xml'],
+            ['application/notjson'],
+            ['application/+json'],
+            ['application/ +json'],
             ['text/javascript'],
             ['form/multipart'],
             ['application/x-www-form-urlencoded'],
