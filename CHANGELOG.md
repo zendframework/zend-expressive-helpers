@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 5.1.2 - TBD
+## 5.1.2 - 2018-07-26
 
 ### Added
 
@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
-- Nothing.
+- [#66](https://github.com/zendframework/zend-expressive-helpers/pull/66) updates the `Content-Type` header matching to be more robust, preventing invalid matches.
 
 ## 5.1.1 - 2018-07-25
 
