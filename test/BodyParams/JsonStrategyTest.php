@@ -56,6 +56,7 @@ class JsonStrategyTest extends TestCase
             ['application/json+xml'],
             ['application/notjson'],
             ['application/+json'],
+            ['application/ +json'],
             ['text/javascript'],
             ['form/multipart'],
             ['application/x-www-form-urlencoded'],
