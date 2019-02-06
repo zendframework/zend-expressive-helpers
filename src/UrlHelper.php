@@ -13,7 +13,6 @@ use InvalidArgumentException;
 use Zend\Expressive\Router\RouteResult;
 use Zend\Expressive\Router\RouterInterface;
 
-use function array_key_exists;
 use function array_merge;
 use function count;
 use function http_build_query;
@@ -86,7 +85,7 @@ class UrlHelper
         }
 
         // Get the options to be passed to the router
-        $routerOptions = array_key_exists('router', $options) ? $options['router'] : [];
+        $routerOptions = $options['router'] ?? [];
 
         if ($routeName === null) {
             $path = $basePath . $this->generateUriFromResult($routeParams, $result, $routerOptions);
