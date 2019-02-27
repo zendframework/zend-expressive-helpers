@@ -24,7 +24,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - Nothing.
 
-## 5.1.3 - TBD
+## 5.1.3 - 2019-02-27
 
 ### Added
 
@@ -32,7 +32,8 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Changed
 
-- Nothing.
+- [#68](https://github.com/zendframework/zend-expressive-helpers/pull/68) replaces a ternary using `array_key_exists` with a null coalesce operation
+  as a microoptimization.
 
 ### Deprecated
 
