@@ -15,6 +15,12 @@ $ composer require zendframework/zend-expressive-helpers
 
 ## Helpers Provided
 
+- [URL Helper](#urlhelper)
+- [Server URL Helper](#serverurlhelper)
+- [BodyParams middleware](#bodyparams-middleware)
+- [Content-Length middleware](#content-length-middleware)
+- [Template Variable Container](#template-variable-container)
+
 ### UrlHelper
 
 `Zend\Expressive\Helper\UrlHelper` provides the ability to generate a URI path
@@ -455,6 +461,117 @@ $app->get('/download/tarball', [
     Download\Tarball::class,
 ], 'download-tar');
 ```
+
+### Template Variable Container
+
+> - Since 5.2.0
+
+[zend-expressive-template](https://github.com/zendframework/zend-expressive-template)
+provides the method `Zend\Expressive\Template\TemplateRendererInterface::addDefaultParam()`
+for providing template variables that should be available to any template.
+
+One common use case for this is to set things such as the current user, current
+section of the website, currently matched route, etc. Unfortunately, because the
+method changes the internal state of the renderer, this can cause problems in an
+async environment, where those changes will persist for parallel and subsequent
+requests.
+
+To provide a stateless alternative, you can create a `Zend\Expressive\Helper\Template\TemplateVariableContainer`
+and persist it as a request attribute. This allows you to set template variables
+that are pipeline-specific, and later extract and merge them with
+handler-specific values when rendering.
+
+To facilitate this further, we provide `Zend\Expressive\Helper\Template\TemplateVariableContainerMiddleware`,
+which will populate the attribute for you if it has not yet been.
+
+As an example, consider the following pipeline:
+
+```php
+use Psr\Container\ContainerInterface;
+use Zend\Expressive\Application;
+use Zend\Expressive\Handler\NotFoundHandler;
+use Zend\Expressive\Helper\ServerUrlMiddleware;
+use Zend\Expressive\Helper\Template\TemplateVariableContainerMiddleware;
+use Zend\Expressive\Helper\UrlHelperMiddleware;
+use Zend\Expressive\MiddlewareFactory;
+use Zend\Expressive\Router\Middleware\DispatchMiddleware;
+use Zend\Expressive\Router\Middleware\ImplicitHeadMiddleware;
+use Zend\Expressive\Router\Middleware\ImplicitOptionsMiddleware;
+use Zend\Expressive\Router\Middleware\MethodNotAllowedMiddleware;
+use Zend\Expressive\Router\Middleware\RouteMiddleware;
+use Zend\Stratigility\Middleware\ErrorHandler;
+
+use function Zend\Stratigility\path;
+
+return function (Application $app, MiddlewareFactory $factory, ContainerInterface $container) : void {
+    $app->pipe(ErrorHandler::class);
+    $app->pipe(ServerUrlMiddleware::class);
+
+    $app->pipe(path(
+        '/api/doc',
+        $factory->lazy(TemplateVariableContainerMiddleware::class)
+    ));
+
+    $app->pipe(RouteMiddleware::class);
+
+    $app->pipe(ImplicitHeadMiddleware::class);
+    $app->pipe(ImplicitOptionsMiddleware::class);
+    $app->pipe(MethodNotAllowedMiddleware::class);
+    $app->pipe(UrlHelperMiddleware::class);
+
+    $app->pipe(DispatchMiddleware::class);
+
+    $app->pipe(NotFoundHandler::class);
+};
+```
+
+Any middleware or handler that responds to a path beginning with `/api/doc` will
+now have a `Zend\Expressive\Helper\Template\TemplateVariableContainer` attribute
+that contains an instance of that class.
+
+Within middleware that responds on that path, you can then do the following:
+
+```php
+use Zend\Expressive\Helper\Template\TemplateVariableContainer;
+use Zend\Expressive\Router\RouteResult;
+
+$request->getAttribute(TemplateVariableContainer::class)
+    ->merge([
+        'user'  => $user,
+        'route' => $request->getAttribute(RouteResult::class)->getMatchedRoute(),
+    ]);
+;
+```
+
+In a handler, you will call `mergeForTemplate()` with any local variables you
+want to use, including those that might override the defaults:
+
+```php
+use Zend\Expressive\Helper\Template\TemplateVariableContainer;
+
+$content = $this->renderer->render(
+    'some::template',
+    $request->getAttribute(TemplateVariableContainer::class)
+        ->mergeForTemplate([
+            'local' => $value,
+        ])
+);
+```
+
+The `TemplateVariableContainer` contains the following methods:
+
+- `count() : int`: return a count of variables in the container.
+- `get(string $key) : mixed`: return the value associated with `$key`; if not
+  present, a `null` is returned.
+- `has(string $key) : bool`: does the container have an entry associated with
+  `$key`?
+- `set(string $key, mixed $value) : void`: set a value in the container.
+- `unset(string $key) : void`: remove a value from the container.
+- `merge(array $values) : void`: merge the `$values` provided with any already
+  in the container. This is useful for setting many values at once.
+- `mergeForTemplate(array $values) : array`: merge `$values` with any values in
+  the container, and return the result. This method has no side effects, and
+  should be used when preparing variables to pass to the renderer.
 
 ## Documentation
 
