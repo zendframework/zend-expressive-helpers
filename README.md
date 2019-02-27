@@ -20,6 +20,7 @@ $ composer require zendframework/zend-expressive-helpers
 - [BodyParams middleware](#bodyparams-middleware)
 - [Content-Length middleware](#content-length-middleware)
 - [Template Variable Container](#template-variable-container)
+- [Route template variable middleware](#route-template-variable-middleware)
 
 ### UrlHelper
 
@@ -572,6 +573,27 @@ The `TemplateVariableContainer` contains the following methods:
 - `mergeForTemplate(array $values) : array`: merge `$values` with any values in
   the container, and return the result. This method has no side effects, and
   should be used when preparing variables to pass to the renderer.
+
+### Route template variable middleware
+
+> - Since 5.2.0
+
+`Zend\Expressive\Helper\Template\RouteTemplateVariableMiddleware` will inject
+the currently matched route into the [template variable container](#template-variable-container).
+
+This middleware relies on the `TemplateVariableContainerMiddleware` preceding
+it in the middleware pipeline, or having the `TemplateVariableContainer`
+request attribute present.
+
+If it finds a `Zend\Expressive\Router\RouteResult` request attribute, it will
+inject the return value of `getMatchedRoute()` under the name `route` in the
+template variable container.
+
+Templates rendered using the container can then access that value. It will
+either be a Zend\Expressive\Router\Route instance, or empty.
+
+This middleware can replace the [UrlHelperMiddleware](#urlhelper) in your
+pipeline.
 
 ## Documentation
 
