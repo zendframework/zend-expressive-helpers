@@ -12,7 +12,7 @@ namespace Zend\Expressive\Helper\Template;
 use Countable;
 
 /**
- * Stateful container for managing template variables within a middleware pipeline.
+ * Container for managing template variables within a middleware pipeline.
  *
  * `Zend\Expressive\Template\TemplateRendererInterface::addDefaultParam()` alters
  * the state of the renderer, which can be problematic in async environments.
@@ -21,6 +21,10 @@ use Countable;
  * rendering. The class that renders a template (generally a handler, but
  * potentially middleware) can then pull this container and use it to seed the
  * template variables.
+ *
+ * The container is itself immutable, ensuring state changes must be propagated
+ * to lower levels of the application, just as you would with other request
+ * collaborators.
  *
  * Middleware that needs to populate one or more template variables can do the
  * following:
@@ -32,13 +36,16 @@ use Countable;
  * );
  *
  * // Populate a single variable:
- * $container->set('user', $user);
+ * $container = $container->with('user', $user);
  *
  * // Populate several variables:
- * $container->merge([
+ * $container = $container->merge([
  *     'user'  => $user,
  *     'roles' => $user->getRoles(),
  * ]);
+ *
+ * // Unset a variable:
+ * $container = $container->without('user');
  *
  * return $handler->handle($request->withAttribute(
  *     TemplateVariableContainer::class,
@@ -89,27 +96,41 @@ class TemplateVariableContainer implements Countable
         return array_key_exists($key, $this->variables);
     }
 
-    public function set(string $key, $value) : void
+    /**
+     * @return self Returns a new instance that contains the given key/value pair
+     */
+    public function with(string $key, $value) : self
     {
-        $this->variables[$key] = $value;
-    }
-
-    public function unset(string $key) : void
-    {
-        unset($this->variables[$key]);
+        $new = clone $this;
+        $new->variables[$key] = $value;
+        return $new;
     }
 
     /**
-     * Merge an array of values into the container.
+     * @return self Returns a new instance with the given key removed.
+     */
+    public function without(string $key) : self
+    {
+        $new = clone $this;
+        unset($new->variables[$key]);
+        return $new;
+    }
+
+    /**
+     * Create a new instance that merges the provided values with the existing values.
      *
      * Use this method to populate many values in the container at once.
      *
      * This method will overwrite any existing value with the same key with the
      * new value if it occurs in $values.
+     *
+     * @return self Returns a new instance with the merged values.
      */
-    public function merge(array $values) : void
+    public function merge(array $values) : self
     {
-        $this->variables = array_merge($this->variables, $values);
+        $new = clone $this;
+        $new->variables = array_merge($this->variables, $values);
+        return $new;
     }
 
     /**

@@ -45,8 +45,9 @@ class RouteTemplateVariableMiddleware implements MiddlewareInterface
             ? $routeResult->getMatchedRoute()
             : null;
 
-        $container->set('route', $route);
-
-        return $handler->handle($request);
+        return $handler->handle($request->withAttribute(
+            TemplateVariableContainer::class,
+            $container->with('route', $route)
+        ));
     }
 }

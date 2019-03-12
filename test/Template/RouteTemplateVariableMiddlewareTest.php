@@ -64,6 +64,20 @@ class RouteTemplateVariableMiddlewareTest extends TestCase
             ->willReturn(null)
             ->shouldBeCalledTimes(1);
 
+        $originalContainer = $this->container;
+        $this->request
+            ->withAttribute(
+                TemplateVariableContainer::class,
+                Argument::that(function ($container) use ($originalContainer) {
+                    TestCase::assertNotSame($container, $originalContainer);
+                    TestCase::assertTrue($container->has('route'));
+                    TestCase::assertNull($container->get('route'));
+                    return $container;
+                })
+            )
+            ->will([$this->request, 'reveal'])
+            ->shouldBeCalledTimes(1);
+
         $this->handler
             ->handle(Argument::that([$this->request, 'reveal']))
             ->will([$this->response, 'reveal']);
@@ -72,9 +86,6 @@ class RouteTemplateVariableMiddlewareTest extends TestCase
             $this->response->reveal(),
             $this->middleware->process($this->request->reveal(), $this->handler->reveal())
         );
-
-        $this->assertTrue($this->container->has('route'));
-        $this->assertNull($this->container->get('route'));
     }
 
     public function routeTypes() : iterable
@@ -108,6 +119,20 @@ class RouteTemplateVariableMiddlewareTest extends TestCase
             ->will([$routeResult, 'reveal'])
             ->shouldBeCalledTimes(1);
 
+        $originalContainer = $this->container;
+        $this->request
+            ->withAttribute(
+                TemplateVariableContainer::class,
+                Argument::that(function ($container) use ($originalContainer, $route) {
+                    TestCase::assertNotSame($container, $originalContainer);
+                    TestCase::assertTrue($container->has('route'));
+                    TestCase::assertSame($container->get('route'), $route);
+                    return $container;
+                })
+            )
+            ->will([$this->request, 'reveal'])
+            ->shouldBeCalledTimes(1);
+
         $this->handler
             ->handle(Argument::that([$this->request, 'reveal']))
             ->will([$this->response, 'reveal']);
@@ -116,8 +141,5 @@ class RouteTemplateVariableMiddlewareTest extends TestCase
             $this->response->reveal(),
             $this->middleware->process($this->request->reveal(), $this->handler->reveal())
         );
-
-        $this->assertTrue($this->container->has('route'));
-        $this->assertSame($route, $this->container->get('route'));
     }
 }
