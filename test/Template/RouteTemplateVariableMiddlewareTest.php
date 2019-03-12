@@ -31,16 +31,32 @@ class RouteTemplateVariableMiddlewareTest extends TestCase
         $this->middleware = new RouteTemplateVariableMiddleware();
     }
 
-    public function testMiddlewareIsANoOpIfNoVariableContainerPresent()
+    public function testMiddlewareInjectsVariableContainerWithNullRouteIfNoVariableContainerOrRouteResultPresent()
     {
         $this->request
-            ->getAttribute(TemplateVariableContainer::class)
-            ->willReturn(null)
+            ->getAttribute(TemplateVariableContainer::class, Argument::type(TemplateVariableContainer::class))
+            ->will(function ($args) {
+                return $args[1];
+            })
             ->shouldBeCalledTimes(1);
 
         $this->request
             ->getAttribute(RouteResult::class, null)
-            ->shouldNotBeCalled();
+            ->willReturn(null)
+            ->shouldBeCalledTimes(1);
+
+        $this->request
+            ->withAttribute(
+                TemplateVariableContainer::class,
+                Argument::that(function ($container) {
+                    TestCase::assertInstanceOf(TemplateVariableContainer::class, $container);
+                    TestCase::assertTrue($container->has('route'));
+                    TestCase::assertNull($container->get('route'));
+                    return $container;
+                })
+            )
+            ->will([$this->request, 'reveal'])
+            ->shouldBeCalledTimes(1);
 
         $this->handler
             ->handle(Argument::that([$this->request, 'reveal']))
@@ -55,7 +71,7 @@ class RouteTemplateVariableMiddlewareTest extends TestCase
     public function testMiddlewareWillInjectNullValueForRouteIfNoRouteResultInRequest()
     {
         $this->request
-            ->getAttribute(TemplateVariableContainer::class)
+            ->getAttribute(TemplateVariableContainer::class, Argument::type(TemplateVariableContainer::class))
             ->willReturn($this->container)
             ->shouldBeCalledTimes(1);
 
@@ -88,29 +104,12 @@ class RouteTemplateVariableMiddlewareTest extends TestCase
         );
     }
 
-    public function routeTypes() : iterable
-    {
-        yield 'null'  => [null];
-        yield 'false' => [false];
-
-        $route = $this->prophesize(Route::class)->reveal();
-        yield 'route' => [$route];
-    }
-
-    /**
-     * @dataProvider routeTypes
-     * @param null|false|Route $route
-     */
-    public function testMiddlewareWillInjectRoutePulledFromRequestRouteResult($route)
+    public function testMiddlewareWillInjectRoutePulledFromRequestRouteResult()
     {
         $routeResult = $this->prophesize(RouteResult::class);
-        $routeResult
-            ->getMatchedRoute()
-            ->willReturn($route)
-            ->shouldBeCalledTimes(1);
 
         $this->request
-            ->getAttribute(TemplateVariableContainer::class)
+            ->getAttribute(TemplateVariableContainer::class, Argument::type(TemplateVariableContainer::class))
             ->willReturn($this->container)
             ->shouldBeCalledTimes(1);
 
@@ -123,10 +122,10 @@ class RouteTemplateVariableMiddlewareTest extends TestCase
         $this->request
             ->withAttribute(
                 TemplateVariableContainer::class,
-                Argument::that(function ($container) use ($originalContainer, $route) {
+                Argument::that(function ($container) use ($originalContainer, $routeResult) {
                     TestCase::assertNotSame($container, $originalContainer);
                     TestCase::assertTrue($container->has('route'));
-                    TestCase::assertSame($container->get('route'), $route);
+                    TestCase::assertSame($container->get('route'), $routeResult->reveal());
                     return $container;
                 })
             )
