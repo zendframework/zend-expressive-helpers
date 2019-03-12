@@ -485,6 +485,11 @@ handler-specific values when rendering.
 To facilitate this further, we provide `Zend\Expressive\Helper\Template\TemplateVariableContainerMiddleware`,
 which will populate the attribute for you if it has not yet been.
 
+The container is **immutable**, and any changes will result in a new instance.
+As such, any middleware that is providing additional values or removing values
+**must** call `$request->withAttribute()` to replace the instance, per the
+examples below.
+
 As an example, consider the following pipeline:
 
 ```php
@@ -536,12 +541,19 @@ Within middleware that responds on that path, you can then do the following:
 use Zend\Expressive\Helper\Template\TemplateVariableContainer;
 use Zend\Expressive\Router\RouteResult;
 
-$request->getAttribute(TemplateVariableContainer::class)
-    ->merge([
+$container = $request->getAttribute(
+    TemplateVariableContainer::class,
+    new TemplateVariableContainer()
+);
+
+// Since containers are immutable, we re-populate the request:
+$request = $request->withAttribute(
+    TemplateVariableContainer::class,
+    $container->merge([
         'user'  => $user,
-        'route' => $request->getAttribute(RouteResult::class)->getMatchedRoute(),
-    ]);
-;
+        'route' => $request->getAttribute(RouteResult::class),
+    ])
+);
 ```
 
 In a handler, you will call `mergeForTemplate()` with any local variables you
@@ -552,7 +564,8 @@ use Zend\Expressive\Helper\Template\TemplateVariableContainer;
 
 $content = $this->renderer->render(
     'some::template',
-    $request->getAttribute(TemplateVariableContainer::class)
+    $request
+        ->getAttribute(TemplateVariableContainer::class)
         ->mergeForTemplate([
             'local' => $value,
         ])
@@ -566,10 +579,13 @@ The `TemplateVariableContainer` contains the following methods:
   present, a `null` is returned.
 - `has(string $key) : bool`: does the container have an entry associated with
   `$key`?
-- `set(string $key, mixed $value) : void`: set a value in the container.
-- `unset(string $key) : void`: remove a value from the container.
-- `merge(array $values) : void`: merge the `$values` provided with any already
-  in the container. This is useful for setting many values at once.
+- `with(string $key, mixed $value) : self`: return a new container instance
+  containing the key/value pair provided.
+- `without(string $key) : self`: return a new container instance that does not
+  contain the given `$key`.
+- `merge(array $values) : self`: return a new container that merge the `$values`
+  provided with those in the original container. This is useful for setting
+  many values at once.
 - `mergeForTemplate(array $values) : array`: merge `$values` with any values in
   the container, and return the result. This method has no side effects, and
   should be used when preparing variables to pass to the renderer.
@@ -583,14 +599,16 @@ the currently matched route into the [template variable container](#template-var
 
 This middleware relies on the `TemplateVariableContainerMiddleware` preceding
 it in the middleware pipeline, or having the `TemplateVariableContainer`
-request attribute present.
+request attribute present; if neither is present, it will generate a new
+instance.
 
-If it finds a `Zend\Expressive\Router\RouteResult` request attribute, it will
-inject the return value of `getMatchedRoute()` under the name `route` in the
-template variable container.
+It then populates the container's `route` parameter using the results of
+retrieving the `Zend\Expressive\Router\RouteResult` request attribute; the value
+will be either an instance of that class, or `null`.
 
-Templates rendered using the container can then access that value. It will
-either be a Zend\Expressive\Router\Route instance, or empty.
+Templates rendered using the container can then access that value, and test for
+routing success/failure status, pull the matched route name, route, and/or
+parameters from it.
 
 This middleware can replace the [UrlHelperMiddleware](#urlhelper) in your
 pipeline.

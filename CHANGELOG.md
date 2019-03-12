@@ -17,10 +17,10 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - [#70](https://github.com/zendframework/zend-expressive-helpers/pull/70) adds `Zend\Expressive\Helper\Template\RouteTemplateVariableMiddleware`,
   which will register the return value of any discovered `Zend\Expressive\Router\RouteResult`
-  request attribute's `getMatchedRoute()` method in the
-  `TemplateVariableContainer` request attribute, when present. This middleware
-  can be used in place of the `UrlHelperMiddleware`, as long as you **always**
-  provide the route name to the `UrlHelper`.
+  request attribute as the "route" variable of a `TemplateVariableContainer`
+  request attribute, when present. This middleware can be used in place of the
+  `UrlHelperMiddleware`, as long as you **always** provide the route name to the
+  `UrlHelper`.
 
 ### Changed
 
