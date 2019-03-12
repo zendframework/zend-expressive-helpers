@@ -1,7 +1,7 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-expressive-helpers for the canonical source repository
- * @copyright Copyright (c) 2018 Zend Technologies USA Inc. (https://www.zend.com)
+ * @copyright Copyright (c) 2018-2019 Zend Technologies USA Inc. (https://www.zend.com)
  * @license   https://github.com/zendframework/zend-expressive-helpers/blob/master/LICENSE.md New BSD License
  */
 
@@ -20,9 +20,12 @@ class ConfigProvider
 
     public function getDependencies() : array
     {
+        // @codingStandardsIgnoreStart
+        // phpcs:disable
         return [
             'invokables' => [
-                ServerUrlHelper::class => ServerUrlHelper::class,
+                ServerUrlHelper::class                              => ServerUrlHelper::class,
+                Template\TemplateVariableContainerMiddleware::class => Template\TemplateVariableContainerMiddleware::class,
             ],
             'factories'  => [
                 ServerUrlMiddleware::class => ServerUrlMiddlewareFactory::class,
@@ -30,5 +33,7 @@ class ConfigProvider
                 UrlHelperMiddleware::class => UrlHelperMiddlewareFactory::class,
             ],
         ];
+        // phpcs:enable
+        // @codingStandardsIgnoreEnd
     }
 }
