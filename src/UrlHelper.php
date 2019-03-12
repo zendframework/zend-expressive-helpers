@@ -147,10 +147,7 @@ class UrlHelper
         $this->basePath = '/' . ltrim($path, '/');
     }
 
-    /**
-     * Internal accessor for retrieving the route result.
-     */
-    protected function getRouteResult() : ?RouteResult
+    public function getRouteResult() : ?RouteResult
     {
         return $this->result;
     }

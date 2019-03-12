@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 5.1.4 - TBD
+## 5.2.0 - 2019-03-12
 
 ### Added
 
@@ -10,7 +10,9 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Changed
 
-- Nothing.
+- [#71](https://github.com/zendframework/zend-expressive-helpers/pull/71) changes the visibility of `Zend\Expressive\UrlHelper::getRouteResult()` to
+  `public`, allowing it to be consulted in order to retrieve the matched route
+  name and route parameters.
 
 ### Deprecated
 

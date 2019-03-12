@@ -377,4 +377,19 @@ class UrlHelperTest extends TestCase
             )
         );
     }
+
+    public function testGetRouteResultIfNoRouteResultSet()
+    {
+        $helper = $this->createHelper();
+        $this->assertNull($helper->getRouteResult());
+    }
+
+    public function testGetRouteResultWithRouteResultSet()
+    {
+        $helper = $this->createHelper();
+        $result = $this->prophesize(RouteResult::class);
+
+        $helper->setRouteResult($result->reveal());
+        $this->assertInstanceOf(RouteResult::class, $helper->getRouteResult());
+    }
 }
